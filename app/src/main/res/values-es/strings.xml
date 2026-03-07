@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">ToDoApp</string>
+    <string name="new_task_title">Nueva Tarea</string>
+    <string name="title_task">Titulo</string>
+    <string name="description">Descripcion</string>
+    <string name="add_task">Agregar Tarea</string>
+</resources>

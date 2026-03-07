@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name" translatable="false">ToDoApp</string>
+    <string name="new_task_title">New Task</string>
+    <string name="title_task">Title</string>
+    <string name="description">Description</string>
+    <string name="add_task">Add Task</string>
+</resources>
