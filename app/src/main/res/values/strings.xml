@@ -9,4 +9,6 @@
     <string name="edit_task">Edit Task</string>
     <string name="apply">Apply</string>
     <string name="cancel">Cancel</string>
+    <string name="new_option">New</string>
+    <string name="tasks_option">Tasks</string>
 </resources>

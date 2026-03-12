@@ -9,6 +9,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -24,9 +25,7 @@ enum class ToDoScreen() {
 }
 
 @Composable
-fun ToDoBottomBar(
-    navController: NavHostController
-) {
+fun ToDoBottomBar(navController: NavHostController) {
 
     NavigationBar {
 
@@ -41,7 +40,7 @@ fun ToDoBottomBar(
                     contentDescription = "New Task"
                 )
             },
-            label = { Text("New") }
+            label = { Text(stringResource(R.string.new_option)) }
         )
 
         NavigationBarItem(
@@ -55,7 +54,7 @@ fun ToDoBottomBar(
                     contentDescription = "Tasks"
                 )
             },
-            label = { Text("Tasks") }
+            label = { Text(stringResource(R.string.tasks_option)) }
         )
     }
 }
@@ -73,8 +72,8 @@ fun ToDoApp(
         ) {
             composable(route = ToDoScreen.New_Task.name){
                 NewTaskScreen(
-                    onCreateTask = { title, description ->
-                        TaskRepository.addTask(Task(title = title, description = description))
+                    onCreateTask = { values ->
+                        TaskRepository.addTask(Task(values = values))
                     }
                 )
             }
@@ -84,4 +83,3 @@ fun ToDoApp(
         }
     }
 }
-

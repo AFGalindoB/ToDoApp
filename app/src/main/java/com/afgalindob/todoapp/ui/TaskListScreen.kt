@@ -21,6 +21,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -29,6 +30,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.afgalindob.todoapp.R
 import com.afgalindob.todoapp.data.Task
+import com.afgalindob.todoapp.schema.TaskSchema
 
 @Composable
 fun TaskListScreen(){
@@ -48,13 +50,16 @@ fun TaskListScreen(){
                         .fillMaxWidth()
                         .padding(16.dp)
                 ){
-                    Text(stringResource(R.string.title_task) + ": " + task.title)
-                    Text(stringResource(R.string.description) + ": " + task.description)
+                    // Renderizar los campos del formulario
+                    TaskSchema.fields.forEach { field ->
+                        val value = task.values[field.key] ?: ""
+                        Text(text = stringResource(field.labelRes) + ": " + value)
+                    }
 
+                    // Botones de Eliminar y Editar
                     Row {
-                        Button(
-                            onClick = { TaskRepository.removeTask(task) }
-                        ) {
+                        // Boton Eliminar
+                        Button(onClick = { TaskRepository.removeTask(task.id) }) {
                             Row(){
                                 Icon(
                                     painter = painterResource(R.drawable.delete),
@@ -64,10 +69,11 @@ fun TaskListScreen(){
                                 Text(stringResource(R.string.delete_task))
                             }
                         }
+
                         Spacer(modifier = Modifier.width(5.dp))
-                        Button(
-                            onClick = { editingTask = task }
-                        ) {
+
+                        // Boton Editar
+                        Button(onClick = { editingTask = task }) {
                             Row(){
                                 Icon(
                                     painter = painterResource(R.drawable.edit),
@@ -83,8 +89,11 @@ fun TaskListScreen(){
         }
         editingTask?.let { task ->
 
-            var title by remember { mutableStateOf(task.title) }
-            var description by remember { mutableStateOf(task.description) }
+            val values = remember {
+                mutableStateMapOf<String,String>().apply {
+                    putAll(task.values)
+                }
+            }
 
             AlertDialog(
                 onDismissRequest = { editingTask = null },
@@ -93,17 +102,12 @@ fun TaskListScreen(){
 
                 text = {
                     Column {
-                        TextField(
-                            value = title,
-                            onValueChange = { title = it },
-                            label = { Text(stringResource(R.string.title_task)) }
-                        )
-
-                        TextField(
-                            value = description,
-                            onValueChange = { description = it },
-                            label = { Text(stringResource(R.string.description)) }
-                        )
+                        TaskSchema.fields.forEach { field ->
+                            field.type.RenderInput(
+                                field = field,
+                                values = values
+                            )
+                        }
                     }
                 },
 
@@ -112,8 +116,7 @@ fun TaskListScreen(){
                         onClick = {
                             TaskRepository.updateTask(
                                 task.id,
-                                title,
-                                description
+                                values.toMap()
                             )
                             editingTask = null
                         }

@@ -8,19 +8,16 @@ object TaskRepository {
     fun addTask(task: Task) {
         tasks.add(task)
     }
-    fun removeTask(task: Task) {
-        tasks.removeIf({ it.id == task.id })
+    fun removeTask(taskId: String) {
+        tasks.removeIf { it.id == taskId }
     }
 
-    fun updateTask(taskId: String, newTitle: String, newDescription: String) {
+    fun updateTask(taskId: String, newValues: Map<String,String>) {
 
         val index = tasks.indexOfFirst { it.id == taskId }
 
         if (index != -1) {
-            tasks[index] = tasks[index].copy(
-                title = newTitle,
-                description = newDescription
-            )
+            tasks[index] = tasks[index].copy(values = newValues)
         }
 
     }
