@@ -29,23 +29,17 @@ import androidx.compose.ui.unit.dp
 import com.afgalindob.todoapp.R
 import com.afgalindob.todoapp.data.local.db.Converters
 import com.afgalindob.todoapp.data.local.entity.TaskEntity
-import com.afgalindob.todoapp.data.repository.TaskRepository
 import com.afgalindob.todoapp.schema.TaskSchema
-import androidx.compose.runtime.rememberCoroutineScope
-import kotlinx.coroutines.launch
+import com.afgalindob.todoapp.viewmodel.TaskViewModel
 
 @Composable
-fun TaskListScreen(repository: TaskRepository){
-
-    val scope = rememberCoroutineScope()
+fun TaskListScreen(viewModel: TaskViewModel){
 
     Surface(modifier = Modifier
         .fillMaxSize(),
         color = Color.Black
     ) {
-        val tasks by repository
-            .getAllTasksStream()
-            .collectAsState(initial = emptyList())
+        val tasks by viewModel.tasks.collectAsState()
 
         var editingTask by remember { mutableStateOf<TaskEntity?>(null) }
 
@@ -72,7 +66,7 @@ fun TaskListScreen(repository: TaskRepository){
                     // Botones de Eliminar y Editar
                     Row {
                         // Boton Eliminar
-                        Button(onClick = { scope.launch{repository.deleteTask(task)} }) {
+                        Button(onClick = {viewModel.deleteTask(task)}) {
                             Row(){
                                 Icon(
                                     painter = painterResource(R.drawable.delete),
@@ -126,11 +120,12 @@ fun TaskListScreen(repository: TaskRepository){
 
                 confirmButton = {
                     Button(
-                        onClick = {scope.launch {
-                            repository.updateTask(
-                                task.copy(values = Converters().fromMap(values.toMap()))
+                        onClick = {
+                            val updatedValues = values.toMap()
+                            viewModel.updateTask(
+                                task,
+                                updatedValues
                             )
-                        }
                             editingTask = null
                         }
                     ) { Text(stringResource(R.string.apply)) }
