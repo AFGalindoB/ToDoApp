@@ -1,4 +1,4 @@
-package com.afgalindob.todoapp.ui
+package com.afgalindob.todoapp.ui.screens
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -14,12 +14,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -30,6 +28,8 @@ import com.afgalindob.todoapp.R
 import com.afgalindob.todoapp.data.local.db.Converters
 import com.afgalindob.todoapp.data.local.entity.TaskEntity
 import com.afgalindob.todoapp.schema.TaskSchema
+import com.afgalindob.todoapp.ui.dialogs.DeleteTaskDialog
+import com.afgalindob.todoapp.ui.dialogs.EditTaskDialog
 import com.afgalindob.todoapp.viewmodel.TaskViewModel
 
 @Composable
@@ -42,8 +42,9 @@ fun TaskListScreen(viewModel: TaskViewModel){
         val tasks by viewModel.tasks.collectAsState()
 
         var editingTask by remember { mutableStateOf<TaskEntity?>(null) }
+        var deletingTask by remember { mutableStateOf<TaskEntity?>(null) }
 
-        LazyColumn (){
+        LazyColumn {
             item {Text(stringResource(R.string.task_list_title))}
 
             items(tasks) {task ->
@@ -66,8 +67,8 @@ fun TaskListScreen(viewModel: TaskViewModel){
                     // Botones de Eliminar y Editar
                     Row {
                         // Boton Eliminar
-                        Button(onClick = {viewModel.deleteTask(task)}) {
-                            Row(){
+                        Button(onClick = { deletingTask = task }) {
+                            Row{
                                 Icon(
                                     painter = painterResource(R.drawable.delete),
                                     contentDescription = "Delete Task"
@@ -81,7 +82,7 @@ fun TaskListScreen(viewModel: TaskViewModel){
 
                         // Boton Editar
                         Button(onClick = { editingTask = task }) {
-                            Row(){
+                            Row{
                                 Icon(
                                     painter = painterResource(R.drawable.edit),
                                     contentDescription = "Edit Task"
@@ -96,46 +97,26 @@ fun TaskListScreen(viewModel: TaskViewModel){
         }
         editingTask?.let { task ->
 
-            val values = remember(task) {
-                mutableStateMapOf<String,String>().apply {
-                    putAll(Converters().toMap(task.values))
-                }
-            }
+            EditTaskDialog(
+                task = task,
+                onConfirm = { values ->
+                    viewModel.updateTask(task, values)
+                    editingTask = null
+                },
+                onDismiss = { editingTask = null }
+            )
+        }
+        deletingTask?.let { task ->
+            DeleteTaskDialog(
+                task = task,
 
-            AlertDialog(
-                onDismissRequest = { editingTask = null },
-
-                title = { Text(stringResource(R.string.edit_task)) },
-
-                text = {
-                    Column {
-                        TaskSchema.fields.forEach { field ->
-                            field.type.RenderInput(
-                                field = field,
-                                values = values
-                            )
-                        }
-                    }
+                onConfirm = {
+                    viewModel.deleteTask(task)
+                    deletingTask = null
                 },
 
-                confirmButton = {
-                    Button(
-                        onClick = {
-                            val updatedValues = values.toMap()
-                            viewModel.updateTask(
-                                task,
-                                updatedValues
-                            )
-                            editingTask = null
-                        }
-                    ) { Text(stringResource(R.string.apply)) }
-                },
-
-                dismissButton = {
-                    Button(onClick = { editingTask = null })
-                    {
-                        Text(stringResource(R.string.cancel))
-                    }
+                onDismiss = {
+                    deletingTask = null
                 }
             )
         }

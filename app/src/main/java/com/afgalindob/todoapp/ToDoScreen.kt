@@ -18,14 +18,14 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.afgalindob.todoapp.data.local.db.AppDatabase
 import com.afgalindob.todoapp.data.repository.OfflineTaskRepository
-import com.afgalindob.todoapp.ui.NewTaskScreen
-import com.afgalindob.todoapp.ui.TaskListScreen
+import com.afgalindob.todoapp.ui.screens.NewTaskScreen
+import com.afgalindob.todoapp.ui.screens.TaskListScreen
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.afgalindob.todoapp.viewmodel.TaskViewModel
 
 enum class ToDoScreen() {
-    New_Task,
-    Task_List
+    NewTask,
+    TaskList
 }
 
 @Composable
@@ -36,7 +36,7 @@ fun ToDoBottomBar(navController: NavHostController) {
         NavigationBarItem(
             selected = false,
             onClick = {
-                navController.navigate(ToDoScreen.New_Task.name) {
+                navController.navigate(ToDoScreen.NewTask.name) {
                     popUpTo(navController.graph.startDestinationId)
                     launchSingleTop = true
                 }
@@ -53,7 +53,7 @@ fun ToDoBottomBar(navController: NavHostController) {
         NavigationBarItem(
             selected = false,
             onClick = {
-                navController.navigate(ToDoScreen.Task_List.name) {
+                navController.navigate(ToDoScreen.TaskList.name) {
                     popUpTo(navController.graph.startDestinationId)
                     launchSingleTop = true
                 }
@@ -89,15 +89,15 @@ fun ToDoApp(
         bottomBar = { ToDoBottomBar(navController) }
     ) { innerPadding ->
         NavHost(navController = navController,
-                startDestination = ToDoScreen.New_Task.name,
+                startDestination = ToDoScreen.NewTask.name,
                 modifier = Modifier.padding(innerPadding)
         ) {
-            composable(ToDoScreen.New_Task.name){
+            composable(ToDoScreen.NewTask.name){
                 NewTaskScreen(
                     onCreateTask = { values -> viewModel.createTask(values) }
                 )
             }
-            composable(ToDoScreen.Task_List.name){
+            composable(ToDoScreen.TaskList.name){
                 TaskListScreen(viewModel)
             }
         }

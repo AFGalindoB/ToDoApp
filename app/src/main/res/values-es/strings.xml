@@ -3,6 +3,7 @@
     <string name="app_name">ToDoApp</string>
     <string name="new_task_title">Nueva Tarea</string>
     <string name="task_list_title">Lista de Tareas</string>
+    <string name="delete_task_dialog">¿Desea eliminar esta tarea?</string>
     <string name="title_task">Titulo</string>
     <string name="description">Descripcion</string>
     <string name="add_task">Agregar Tarea</string>
@@ -12,4 +13,5 @@
     <string name="cancel">Cancelar</string>
     <string name="new_option">Nuevo</string>
     <string name="tasks_option">Tareas</string>
+    <string name="delete_option">Eliminar</string>
 </resources>

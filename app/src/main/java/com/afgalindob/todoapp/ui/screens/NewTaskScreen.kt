@@ -1,4 +1,4 @@
-package com.afgalindob.todoapp.ui
+package com.afgalindob.todoapp.ui.screens
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
