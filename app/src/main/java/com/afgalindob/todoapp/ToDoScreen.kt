@@ -8,16 +8,22 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
+import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.afgalindob.todoapp.data.Task
-import com.afgalindob.todoapp.data.TaskRepository
+import com.afgalindob.todoapp.data.local.db.AppDatabase
+import com.afgalindob.todoapp.data.local.entity.TaskEntity
+import com.afgalindob.todoapp.data.repository.OfflineTaskRepository
 import com.afgalindob.todoapp.ui.NewTaskScreen
 import com.afgalindob.todoapp.ui.TaskListScreen
+import kotlinx.coroutines.launch
+import com.afgalindob.todoapp.data.local.db.Converters
+import androidx.compose.runtime.rememberCoroutineScope
 
 enum class ToDoScreen() {
     New_Task,
@@ -63,6 +69,15 @@ fun ToDoBottomBar(navController: NavHostController) {
 fun ToDoApp(
     navController: NavHostController = rememberNavController()
 ) {
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+
+    val repository = remember {
+        OfflineTaskRepository(
+            AppDatabase.getDatabase(context).taskDao()
+        )
+    }
+
     Scaffold (
         bottomBar = { ToDoBottomBar(navController) }
     ) { innerPadding ->
@@ -70,15 +85,18 @@ fun ToDoApp(
                 startDestination = ToDoScreen.New_Task.name,
                 modifier = Modifier.padding(innerPadding)
         ) {
-            composable(route = ToDoScreen.New_Task.name){
+            composable(ToDoScreen.New_Task.name){
                 NewTaskScreen(
                     onCreateTask = { values ->
-                        TaskRepository.addTask(Task(values = values))
+                        scope.launch {
+                            val jsonValues = Converters().fromMap(values)
+                            repository.insertTask(TaskEntity(values = jsonValues))
+                        }
                     }
                 )
             }
-            composable(route = ToDoScreen.Task_List.name){
-                TaskListScreen()
+            composable(ToDoScreen.Task_List.name){
+                TaskListScreen(repository)
             }
         }
     }

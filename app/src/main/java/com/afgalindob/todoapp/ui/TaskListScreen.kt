@@ -8,18 +8,16 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.tooling.preview.Preview
-import com.afgalindob.todoapp.data.TaskRepository
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
-import androidx.compose.material3.TextField
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
@@ -29,22 +27,35 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.afgalindob.todoapp.R
-import com.afgalindob.todoapp.data.Task
+import com.afgalindob.todoapp.data.local.db.Converters
+import com.afgalindob.todoapp.data.local.entity.TaskEntity
+import com.afgalindob.todoapp.data.repository.TaskRepository
 import com.afgalindob.todoapp.schema.TaskSchema
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
 
 @Composable
-fun TaskListScreen(){
+fun TaskListScreen(repository: TaskRepository){
+
+    val scope = rememberCoroutineScope()
+
     Surface(modifier = Modifier
         .fillMaxSize(),
         color = Color.Black
     ) {
-        val tasks = TaskRepository.tasks
-        var editingTask by remember { mutableStateOf<Task?>(null) }
+        val tasks by repository
+            .getAllTasksStream()
+            .collectAsState(initial = emptyList())
+
+        var editingTask by remember { mutableStateOf<TaskEntity?>(null) }
 
         LazyColumn (){
             item {Text(stringResource(R.string.task_list_title))}
 
             items(tasks) {task ->
+
+                val valuesMap = Converters().toMap(task.values)
+
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -52,14 +63,16 @@ fun TaskListScreen(){
                 ){
                     // Renderizar los campos del formulario
                     TaskSchema.fields.forEach { field ->
-                        val value = task.values[field.key] ?: ""
+
+                        val value = valuesMap[field.key] ?: ""
+
                         Text(text = stringResource(field.labelRes) + ": " + value)
                     }
 
                     // Botones de Eliminar y Editar
                     Row {
                         // Boton Eliminar
-                        Button(onClick = { TaskRepository.removeTask(task.id) }) {
+                        Button(onClick = { scope.launch{repository.deleteTask(task)} }) {
                             Row(){
                                 Icon(
                                     painter = painterResource(R.drawable.delete),
@@ -89,9 +102,9 @@ fun TaskListScreen(){
         }
         editingTask?.let { task ->
 
-            val values = remember {
+            val values = remember(task) {
                 mutableStateMapOf<String,String>().apply {
-                    putAll(task.values)
+                    putAll(Converters().toMap(task.values))
                 }
             }
 
@@ -113,11 +126,11 @@ fun TaskListScreen(){
 
                 confirmButton = {
                     Button(
-                        onClick = {
-                            TaskRepository.updateTask(
-                                task.id,
-                                values.toMap()
+                        onClick = {scope.launch {
+                            repository.updateTask(
+                                task.copy(values = Converters().fromMap(values.toMap()))
                             )
+                        }
                             editingTask = null
                         }
                     ) { Text(stringResource(R.string.apply)) }
@@ -132,10 +145,4 @@ fun TaskListScreen(){
             )
         }
     }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun TaskListScreenPreview(){
-    TaskListScreen()
 }
