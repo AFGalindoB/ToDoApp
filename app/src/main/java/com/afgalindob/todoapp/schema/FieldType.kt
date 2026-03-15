@@ -24,7 +24,8 @@ sealed class FieldType {
     @Composable
     abstract fun RenderInput(
         field: FormField,
-        values: MutableMap<String, String>
+        values: MutableMap<String, String>,
+        onValueChange: (String,String) -> Unit
     )
 
     @Composable
@@ -39,13 +40,14 @@ object TextFieldType : FieldType() {
     @Composable
     override fun RenderInput(
         field: FormField,
-        values: MutableMap<String, String>
+        values: MutableMap<String, String>,
+        onValueChange: (String,String) -> Unit
     ) {
 
         TextField(
             value = values[field.key] ?: "",
             onValueChange = {
-                values[field.key] = it
+                onValueChange(field.key, it)
             },
             label = { Text(stringResource(field.labelRes)) },
             singleLine = true,
@@ -73,13 +75,14 @@ object MultilineFieldType : FieldType() {
     @Composable
     override fun RenderInput(
         field: FormField,
-        values: MutableMap<String, String>
+        values: MutableMap<String, String>,
+        onValueChange: (String,String) -> Unit
     ) {
 
         TextField(
             value = values[field.key] ?: "",
             onValueChange = {
-                values[field.key] = it
+                onValueChange(field.key, it)
             },
             label = { Text(stringResource(field.labelRes)) },
             singleLine = false,

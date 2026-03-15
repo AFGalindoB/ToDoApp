@@ -19,13 +19,14 @@ object TaskSchema {
         FormField(
             key = "title",
             labelRes = R.string.title_task,
-            type = TextFieldType
+            type = TextFieldType,
+            required = true
         ),
 
         FormField(
             key = "description",
             labelRes = R.string.description,
-            type = MultilineFieldType
+            type = MultilineFieldType,
         )
 
     )

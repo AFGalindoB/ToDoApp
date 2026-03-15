@@ -13,5 +13,6 @@
     <string name="cancel">Cancelar</string>
     <string name="new_option">Nuevo</string>
     <string name="tasks_option">Tareas</string>
+    <string name="account_option">Mi Cuenta</string>
     <string name="delete_option">Eliminar</string>
 </resources>

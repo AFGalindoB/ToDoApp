@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.afgalindob.todoapp.data.local.db.Converters
 import com.afgalindob.todoapp.data.local.entity.TaskEntity
 import com.afgalindob.todoapp.data.repository.TaskRepository
+import com.afgalindob.todoapp.schema.TaskSchema
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -19,6 +20,22 @@ class TaskViewModel(private val repository: TaskRepository) : ViewModel() {
             started = SharingStarted.WhileSubscribed(5000),
             initialValue = emptyList()
         )
+
+    fun validate(values: Map<String, String>): Map<String, String> {
+
+        val errors = mutableMapOf<String, String>()
+
+        TaskSchema.fields.forEach { field ->
+
+            if (field.required) {
+                val value = values[field.key]
+                if (value.isNullOrBlank()) { errors[field.key] = "Required field" }
+            }
+
+        }
+
+        return errors
+    }
 
     fun createTask(values: Map<String,String>) {
         viewModelScope.launch {

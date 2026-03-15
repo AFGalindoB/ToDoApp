@@ -18,37 +18,20 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.afgalindob.todoapp.data.local.db.AppDatabase
 import com.afgalindob.todoapp.data.repository.OfflineTaskRepository
-import com.afgalindob.todoapp.ui.screens.NewTaskScreen
 import com.afgalindob.todoapp.ui.screens.TaskListScreen
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.afgalindob.todoapp.ui.screens.AccountScreen
 import com.afgalindob.todoapp.viewmodel.TaskViewModel
 
 enum class ToDoScreen() {
-    NewTask,
-    TaskList
+    TaskList,
+    Account
 }
 
 @Composable
 fun ToDoBottomBar(navController: NavHostController) {
 
     NavigationBar {
-
-        NavigationBarItem(
-            selected = false,
-            onClick = {
-                navController.navigate(ToDoScreen.NewTask.name) {
-                    popUpTo(navController.graph.startDestinationId)
-                    launchSingleTop = true
-                }
-            },
-            icon = {
-                Icon(
-                    painterResource(R.drawable.add),
-                    contentDescription = "New Task"
-                )
-            },
-            label = { Text(stringResource(R.string.new_option)) }
-        )
 
         NavigationBarItem(
             selected = false,
@@ -65,6 +48,25 @@ fun ToDoBottomBar(navController: NavHostController) {
                 )
             },
             label = { Text(stringResource(R.string.tasks_option)) }
+
+        )
+
+        NavigationBarItem(
+            selected = false,
+            onClick = {
+                navController.navigate(ToDoScreen.Account.name) {
+                    popUpTo(navController.graph.startDestinationId)
+                    launchSingleTop = true
+                }
+            },
+            icon = {
+                Icon(
+                    painterResource(R.drawable.account),
+                    contentDescription = "Tasks"
+                )
+            },
+            label = { Text(stringResource(R.string.account_option)) }
+
         )
     }
 }
@@ -89,16 +91,14 @@ fun ToDoApp(
         bottomBar = { ToDoBottomBar(navController) }
     ) { innerPadding ->
         NavHost(navController = navController,
-                startDestination = ToDoScreen.NewTask.name,
+                startDestination = ToDoScreen.TaskList.name,
                 modifier = Modifier.padding(innerPadding)
         ) {
-            composable(ToDoScreen.NewTask.name){
-                NewTaskScreen(
-                    onCreateTask = { values -> viewModel.createTask(values) }
-                )
-            }
             composable(ToDoScreen.TaskList.name){
                 TaskListScreen(viewModel)
+            }
+            composable(ToDoScreen.Account.name){
+                AccountScreen()
             }
         }
     }
