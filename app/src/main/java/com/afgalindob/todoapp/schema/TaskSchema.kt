@@ -27,6 +27,18 @@ object TaskSchema {
             key = "description",
             labelRes = R.string.description,
             type = MultilineFieldType,
+        ),
+
+        FormField(
+            key = "date",
+            labelRes = R.string.date,
+            type = TextFieldType
+        ),
+
+        FormField(
+            key = "completed",
+            labelRes = R.string.completed,
+            type = BooleanFieldType,
         )
 
     )

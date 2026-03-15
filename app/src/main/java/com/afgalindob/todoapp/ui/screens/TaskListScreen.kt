@@ -1,13 +1,9 @@
 package com.afgalindob.todoapp.ui.screens
 
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
+import com.afgalindob.todoapp.ui.components.TaskCard
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Surface
@@ -15,7 +11,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -29,7 +24,6 @@ import androidx.compose.ui.unit.dp
 import com.afgalindob.todoapp.R
 import com.afgalindob.todoapp.data.local.db.Converters
 import com.afgalindob.todoapp.data.local.entity.TaskEntity
-import com.afgalindob.todoapp.schema.TaskSchema
 import com.afgalindob.todoapp.ui.dialogs.DeleteTaskDialog
 import com.afgalindob.todoapp.ui.dialogs.TaskDialog
 import com.afgalindob.todoapp.viewmodel.TaskViewModel
@@ -54,50 +48,26 @@ fun TaskListScreen(viewModel: TaskViewModel){
 
                 items(tasks) {task ->
 
-                    val valuesMap = Converters().toMap(task.values)
+                    TaskCard(
+                        task = task,
 
-                    Column( modifier = Modifier.fillMaxWidth().padding(16.dp) )
-                    {
-                        // Renderizar los campos del formulario
-                        TaskSchema.fields.forEach { field ->
-                            val value = valuesMap[field.key] ?: ""
-                            Text(text = stringResource(field.labelRes) + ": " + value)
+                        onToggleCompleted = { completed ->
+                            val values = Converters().toMap(task.values).toMutableMap()
+                            values["completed"] = completed.toString()
+
+                            viewModel.updateTask(task, values)
+                        },
+
+                        onEdit = {
+                            editingTask = task
+                            dialogMode = "edit"
+                            taskErrors.clear()
+                        },
+
+                        onDelete = {
+                            deletingTask = task
                         }
-
-                        Row {
-                            // Boton Eliminar
-                            Button(onClick = { deletingTask = task }) {
-                                Row{
-                                    Icon(
-                                        painter = painterResource(R.drawable.delete),
-                                        contentDescription = "Delete Task"
-                                    )
-                                    Spacer(modifier = Modifier.width(5.dp))
-                                    Text(stringResource(R.string.delete_task))
-                                }
-                            }
-
-                            Spacer(modifier = Modifier.width(5.dp))
-
-                            // Boton Editar
-                            Button(
-                                onClick = {
-                                    editingTask = task
-                                    dialogMode = "edit"
-                                    taskErrors.clear()
-                                }
-                            ) {
-                                Row{
-                                    Icon(
-                                        painter = painterResource(R.drawable.edit),
-                                        contentDescription = "Edit Task"
-                                    )
-                                    Spacer(modifier = Modifier.width(5.dp))
-                                    Text(stringResource(R.string.edit_task))
-                                }
-                            }
-                        }
-                    }
+                    )
                 }
             }
             FloatingActionButton(
