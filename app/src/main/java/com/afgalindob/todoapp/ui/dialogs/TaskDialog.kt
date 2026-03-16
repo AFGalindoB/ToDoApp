@@ -17,11 +17,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.afgalindob.todoapp.R
-import com.afgalindob.todoapp.data.local.db.Converters
 import com.afgalindob.todoapp.data.local.entity.TaskEntity
+import com.afgalindob.todoapp.data.local.entity.toFormMap
 import com.afgalindob.todoapp.schema.TaskSchema
 
-@Composable
+@Composable 
 fun TaskDialog(
     task: TaskEntity? = null,
     errors: Map<String,String> = emptyMap(),
@@ -31,7 +31,7 @@ fun TaskDialog(
 
     val values = remember(task) {
         mutableStateMapOf<String,String>().apply {
-            task?.let { putAll(Converters().toMap(it.values)) }
+            task?.let { putAll(it.toFormMap()) }
         }
     }
 

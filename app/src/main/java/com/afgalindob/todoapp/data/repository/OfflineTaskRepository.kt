@@ -11,8 +11,11 @@ class OfflineTaskRepository(
     override fun getAllTasksStream(): Flow<List<TaskEntity>> =
         taskDao.getAllTasks()
 
-    override fun getTaskStream(id: Int): Flow<TaskEntity?> =
-        taskDao.getTask(id)
+    override fun getPendingTasks(): Flow<List<TaskEntity>> =
+        taskDao.getPendingTasks()
+
+    override fun getTasksByDate(): Flow<List<TaskEntity>> =
+        taskDao.getTasksByDate()
 
     override suspend fun insertTask(task: TaskEntity) =
         taskDao.insert(task)

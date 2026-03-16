@@ -28,7 +28,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.afgalindob.todoapp.R
-import com.afgalindob.todoapp.data.local.db.Converters
 import com.afgalindob.todoapp.data.local.entity.TaskEntity
 import com.afgalindob.todoapp.schema.TaskSchema
 
@@ -42,11 +41,11 @@ fun TaskCard(
 
     var expanded by remember { mutableStateOf(false) }
 
-    val values = Converters().toMap(task.values)
+    val title = task.title
+    val description = task.description
+    val completed = task.completed
 
-    val title = values["title"] ?: ""
-    val description = values["description"] ?: ""
-    val completed = values["completed"]?.toBoolean() ?: false
+    val values = mapOf("date" to task.date)
     val dateField = TaskSchema.fields.first { it.key == "date" }
 
     Card(

@@ -246,7 +246,7 @@ object DateFieldType : FieldType() {
             if (!value.isNullOrBlank())
                 LocalDate.parse(value).format(displayDateFormatter)
             else
-                stringResource(field.labelRes)
+                null
 
         displayDate?.let {
             Text(text = displayDate, style = style)

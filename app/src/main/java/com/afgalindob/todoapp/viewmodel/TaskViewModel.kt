@@ -11,7 +11,6 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 class TaskViewModel(private val repository: TaskRepository) : ViewModel() {
-    private val converters = Converters()
 
     val tasks = repository
         .getAllTasksStream()
@@ -39,8 +38,17 @@ class TaskViewModel(private val repository: TaskRepository) : ViewModel() {
 
     fun createTask(values: Map<String,String>) {
         viewModelScope.launch {
-            val json = converters.fromMap(values)
-            repository.insertTask(TaskEntity(values = json))
+            val now = System.currentTimeMillis()
+            val task = TaskEntity(
+                title = values["title"] ?: "",
+                description = values["description"] ?: "",
+                date = values["date"] ?: "",
+                completed = values["completed"] == "true",
+                createdAt = now,
+                updatedAt = now
+            )
+
+            repository.insertTask(task)
         }
     }
 
@@ -52,8 +60,14 @@ class TaskViewModel(private val repository: TaskRepository) : ViewModel() {
 
     fun updateTask(task: TaskEntity, values: Map<String,String>) {
         viewModelScope.launch {
-            val json = converters.fromMap(values)
-            repository.updateTask(task.copy(values = json))
+            val updatedTask = task.copy(
+                title = values["title"] ?: "",
+                description = values["description"] ?: "",
+                date = values["date"] ?: "",
+                completed = values["completed"] == "true",
+                updatedAt = System.currentTimeMillis()
+            )
+            repository.updateTask(updatedTask)
         }
     }
 }

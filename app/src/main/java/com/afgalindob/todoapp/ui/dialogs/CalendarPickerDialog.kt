@@ -35,6 +35,8 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import java.time.format.DateTimeFormatter
+import java.time.format.TextStyle
+import java.util.Locale
 
 enum class CalendarViewMode {
     DAY,
@@ -180,9 +182,15 @@ fun Header(
         Text(
             text =
                 if (viewMode == CalendarViewMode.DAY) {
-                    currentMonth.month.name.lowercase()
-                        .replaceFirstChar { it.uppercase() } +
+
+                    val monthName = currentMonth.month.getDisplayName(
+                        TextStyle.FULL,
+                        Locale.getDefault()
+                    )
+
+                    monthName.replaceFirstChar { it.uppercase() } +
                             " " + currentMonth.year
+
                 } else {
                     currentMonth.year.toString()
                 },
@@ -276,7 +284,13 @@ fun MonthView(
                     },
                 contentAlignment = Alignment.Center
             ) {
-                Text(month.name, color = color)
+                Text(
+                    text = month.getDisplayName(
+                        TextStyle.FULL,
+                        Locale.getDefault()
+                    ).replaceFirstChar { it.uppercase() },
+                    color = color
+                )
             }
         }
     }

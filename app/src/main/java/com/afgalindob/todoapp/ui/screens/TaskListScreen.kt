@@ -22,13 +22,13 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.afgalindob.todoapp.R
-import com.afgalindob.todoapp.data.local.db.Converters
 import com.afgalindob.todoapp.data.local.entity.TaskEntity
 import com.afgalindob.todoapp.ui.dialogs.DeleteTaskDialog
 import com.afgalindob.todoapp.ui.dialogs.TaskDialog
 import com.afgalindob.todoapp.viewmodel.TaskViewModel
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.ui.Alignment
+import com.afgalindob.todoapp.data.local.entity.toFormMap
 
 @Composable
 fun TaskListScreen(viewModel: TaskViewModel){
@@ -52,7 +52,7 @@ fun TaskListScreen(viewModel: TaskViewModel){
                         task = task,
 
                         onToggleCompleted = { completed ->
-                            val values = Converters().toMap(task.values).toMutableMap()
+                            val values = task.toFormMap().toMutableMap()
                             values["completed"] = completed.toString()
 
                             viewModel.updateTask(task, values)

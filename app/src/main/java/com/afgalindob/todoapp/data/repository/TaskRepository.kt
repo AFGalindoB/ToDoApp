@@ -7,9 +7,11 @@ interface TaskRepository {
 
     fun getAllTasksStream(): Flow<List<TaskEntity>>
 
-    fun getTaskStream(id: Int): Flow<TaskEntity?>
+    fun getPendingTasks(): Flow<List<TaskEntity>>
 
-    suspend fun insertTask(task: TaskEntity)
+    fun getTasksByDate(): Flow<List<TaskEntity>>
+
+    suspend fun insertTask(task: TaskEntity): Long
 
     suspend fun deleteTask(task: TaskEntity)
 
