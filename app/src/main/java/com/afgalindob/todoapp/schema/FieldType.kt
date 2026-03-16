@@ -1,19 +1,31 @@
 package com.afgalindob.todoapp.schema
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.foundation.clickable
+import androidx.compose.ui.unit.dp
+import com.afgalindob.todoapp.ui.dialogs.CalendarDialog
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 /**
  * Representa el comportamiento de un tipo de campo dentro del sistema de formularios.
@@ -39,7 +51,8 @@ sealed class FieldType {
     @Composable
     abstract fun RenderDisplay(
         field: FormField,
-        values: Map<String, String>
+        values: Map<String, String>,
+        style: TextStyle = LocalTextStyle.current
     )
 }
 
@@ -70,11 +83,13 @@ object TextFieldType : FieldType() {
     @Composable
     override fun RenderDisplay(
         field: FormField,
-        values: Map<String, String>
+        values: Map<String, String>,
+        style: TextStyle
     ) {
 
         Text(
-            text = values[field.key] ?: ""
+            text = values[field.key] ?: "",
+            style = style
         )
     }
 }
@@ -106,11 +121,13 @@ object MultilineFieldType : FieldType() {
     @Composable
     override fun RenderDisplay(
         field: FormField,
-        values: Map<String, String>
+        values: Map<String, String>,
+        style: TextStyle
     ) {
 
         Text(
-            text = values[field.key] ?: ""
+            text = values[field.key] ?: "",
+            style = style
         )
     }
 }
@@ -146,14 +163,93 @@ object BooleanFieldType : FieldType() {
     @Composable
     override fun RenderDisplay(
         field: FormField,
-        values: Map<String, String>
+        values: Map<String, String>,
+        style: TextStyle
     ) {
 
         val checked = values[field.key]?.toBoolean() ?: false
 
         Text(
             text = if (checked) "✔ ${stringResource(field.labelRes)}"
-            else "✘ ${stringResource(field.labelRes)}"
+            else "✘ ${stringResource(field.labelRes)}",
+            style = style
         )
+    }
+}
+
+object DateFieldType : FieldType() {
+
+    @Composable
+    override fun RenderInput(
+        field: FormField,
+        values: MutableMap<String, String>,
+        onValueChange: (String, String) -> Unit
+    ) {
+
+        var showDialog by remember { mutableStateOf(false) }
+
+        val value = values[field.key]
+        val initialDate = values[field.key]?.let {
+            runCatching { LocalDate.parse(it) }.getOrElse { LocalDate.now() }
+        } ?: LocalDate.now()
+
+        var selectedDate by remember(values[field.key]) {
+            mutableStateOf(initialDate)
+        }
+
+        val displayDateFormatter: DateTimeFormatter =
+            DateTimeFormatter.ofPattern("dd MMMM yyyy", Locale.getDefault())
+
+        val displayDate =
+            if (!value.isNullOrBlank())
+                LocalDate.parse(value).format(displayDateFormatter)
+            else
+                stringResource(field.labelRes)
+
+
+        Text(
+            text = displayDate,
+
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { showDialog = true }
+                .padding(12.dp)
+        )
+
+        if (showDialog) {
+            CalendarDialog(
+                selectedDate = selectedDate,
+                onDateSelected = { dateString ->
+                    selectedDate = LocalDate.parse(dateString)
+                    onValueChange(field.key, dateString)
+                    showDialog = false
+                },
+                onDismiss = {
+                    showDialog = false
+                }
+            )
+        }
+    }
+
+    @Composable
+    override fun RenderDisplay(
+        field: FormField,
+        values: Map<String, String>,
+        style: TextStyle
+    ) {
+
+        val value = values[field.key]
+        val displayDateFormatter: DateTimeFormatter =
+            DateTimeFormatter.ofPattern("dd MMMM yyyy", Locale.getDefault())
+
+        val displayDate =
+            if (!value.isNullOrBlank())
+                LocalDate.parse(value).format(displayDateFormatter)
+            else
+                stringResource(field.labelRes)
+
+        displayDate?.let {
+            Text(text = displayDate, style = style)
+        }
     }
 }

@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.dp
 import com.afgalindob.todoapp.R
 import com.afgalindob.todoapp.data.local.db.Converters
 import com.afgalindob.todoapp.data.local.entity.TaskEntity
+import com.afgalindob.todoapp.schema.TaskSchema
 
 @Composable
 fun TaskCard(
@@ -46,7 +47,7 @@ fun TaskCard(
     val title = values["title"] ?: ""
     val description = values["description"] ?: ""
     val completed = values["completed"]?.toBoolean() ?: false
-    val date = values["date"] ?: ""
+    val dateField = TaskSchema.fields.first { it.key == "date" }
 
     Card(
         modifier = Modifier
@@ -79,10 +80,7 @@ fun TaskCard(
                         style = MaterialTheme.typography.titleMedium
                     )
 
-                    Text(
-                        text = date,
-                        style = MaterialTheme.typography.bodySmall
-                    )
+                    dateField.type.RenderDisplay(dateField, values, MaterialTheme.typography.bodySmall)
                 }
 
                 IconButton(

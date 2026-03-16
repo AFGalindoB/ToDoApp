@@ -6,7 +6,7 @@
     <string name="delete_task_dialog">¿Desea eliminar esta tarea?</string>
     <string name="title_task">Titulo</string>
     <string name="description">Descripcion</string>
-    <string name="date">Fecha</string>
+    <string name="date_input_label">Agregar Fecha</string>
     <string name="completed">Completada</string>
     <string name="add_task">Agregar Tarea</string>
     <string name="delete_task">Eliminar Tarea</string>

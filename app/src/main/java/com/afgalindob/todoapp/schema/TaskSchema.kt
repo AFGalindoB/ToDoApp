@@ -31,8 +31,8 @@ object TaskSchema {
 
         FormField(
             key = "date",
-            labelRes = R.string.date,
-            type = TextFieldType
+            labelRes = R.string.date_input_label,
+            type = DateFieldType
         ),
 
         FormField(
