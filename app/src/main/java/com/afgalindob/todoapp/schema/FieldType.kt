@@ -179,6 +179,28 @@ object BooleanFieldType : FieldType() {
 
 object DateFieldType : FieldType() {
 
+    private fun getDisplayDate(value: String?): String? {
+        if (value.isNullOrBlank()) return null
+
+        return try {
+            // Intento 1: Formato corto que está causando el crash (yy-MM-dd)
+            val inputFormatter = DateTimeFormatter.ofPattern("yy-MM-dd")
+            val date = LocalDate.parse(value, inputFormatter)
+            val outputFormatter = DateTimeFormatter.ofPattern("dd MMMM yyyy", Locale.getDefault())
+            date.format(outputFormatter)
+        } catch (e: Exception) {
+            try {
+                // Intento 2: Formato estándar ISO (yyyy-MM-dd)
+                val date = LocalDate.parse(value)
+                val outputFormatter = DateTimeFormatter.ofPattern("dd MMMM yyyy", Locale.getDefault())
+                date.format(outputFormatter)
+            } catch (e2: Exception) {
+                // Si falla todo, devolvemos null para no romper la app
+                null
+            }
+        }
+    }
+
     @Composable
     override fun RenderInput(
         field: FormField,
@@ -187,28 +209,26 @@ object DateFieldType : FieldType() {
     ) {
 
         var showDialog by remember { mutableStateOf(false) }
-
         val value = values[field.key]
-        val initialDate = values[field.key]?.let {
-            runCatching { LocalDate.parse(it) }.getOrElse { LocalDate.now() }
+
+        val initialDate = value?.let {
+            try {
+                // Intentamos parsear con el formato corto o largo para el diálogo
+                val inputFormatter = DateTimeFormatter.ofPattern("yy-MM-dd")
+                LocalDate.parse(it, inputFormatter)
+            } catch (e: Exception) {
+                runCatching { LocalDate.parse(it) }.getOrElse { LocalDate.now() }
+            }
         } ?: LocalDate.now()
 
         var selectedDate by remember(values[field.key]) {
             mutableStateOf(initialDate)
         }
 
-        val displayDateFormatter: DateTimeFormatter =
-            DateTimeFormatter.ofPattern("dd MMMM yyyy", Locale.getDefault())
-
-        val displayDate =
-            if (!value.isNullOrBlank())
-                LocalDate.parse(value).format(displayDateFormatter)
-            else
-                stringResource(field.labelRes)
-
+        val displayText = getDisplayDate(value) ?: stringResource(field.labelRes)
 
         Text(
-            text = displayDate,
+            text = displayText,
 
             modifier = Modifier
                 .fillMaxWidth()
@@ -237,19 +257,14 @@ object DateFieldType : FieldType() {
         values: Map<String, String>,
         style: TextStyle
     ) {
-
         val value = values[field.key]
-        val displayDateFormatter: DateTimeFormatter =
-            DateTimeFormatter.ofPattern("dd MMMM yyyy", Locale.getDefault())
 
-        val displayDate =
-            if (!value.isNullOrBlank())
-                LocalDate.parse(value).format(displayDateFormatter)
-            else
-                null
+        if (value.isNullOrBlank()) return
+
+        val displayDate = getDisplayDate(value)
 
         displayDate?.let {
-            Text(text = displayDate, style = style)
+            Text(text = it, style = style)
         }
     }
 }

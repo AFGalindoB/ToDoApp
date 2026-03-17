@@ -8,6 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -20,6 +21,7 @@ import com.afgalindob.todoapp.data.local.db.AppDatabase
 import com.afgalindob.todoapp.data.repository.OfflineTaskRepository
 import com.afgalindob.todoapp.ui.screens.TaskListScreen
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.compose.currentBackStackEntryAsState
 import com.afgalindob.todoapp.ui.screens.AccountScreen
 import com.afgalindob.todoapp.viewmodel.TaskViewModel
 
@@ -31,14 +33,19 @@ enum class ToDoScreen() {
 @Composable
 fun ToDoBottomBar(navController: NavHostController) {
 
+    val currentBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = currentBackStackEntry?.destination?.route
+
     NavigationBar {
 
         NavigationBarItem(
-            selected = false,
+            selected = currentRoute == ToDoScreen.TaskList.name,
             onClick = {
-                navController.navigate(ToDoScreen.TaskList.name) {
-                    popUpTo(navController.graph.startDestinationId)
-                    launchSingleTop = true
+                if (currentRoute != ToDoScreen.TaskList.name) {
+                    navController.navigate(ToDoScreen.TaskList.name) {
+                        popUpTo(navController.graph.startDestinationId)
+                        launchSingleTop = true
+                    }
                 }
             },
             icon = {
@@ -52,11 +59,13 @@ fun ToDoBottomBar(navController: NavHostController) {
         )
 
         NavigationBarItem(
-            selected = false,
+            selected = currentRoute == ToDoScreen.Account.name,
             onClick = {
-                navController.navigate(ToDoScreen.Account.name) {
-                    popUpTo(navController.graph.startDestinationId)
-                    launchSingleTop = true
+                if (currentRoute != ToDoScreen.Account.name){
+                    navController.navigate(ToDoScreen.Account.name) {
+                        popUpTo(navController.graph.startDestinationId)
+                        launchSingleTop = true
+                    }
                 }
             },
             icon = {

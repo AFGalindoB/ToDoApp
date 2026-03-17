@@ -18,7 +18,7 @@ interface TaskDao {
     @Query("SELECT * FROM tasks WHERE completed = 0")
     fun getPendingTasks(): Flow<List<TaskEntity>>
 
-    @Query("SELECT * FROM tasks ORDER BY date ASC")
+    @Query("SELECT * FROM tasks ORDER BY date DESC")
     fun getTasksByDate(): Flow<List<TaskEntity>>
 
     @Insert(onConflict = OnConflictStrategy.Companion.IGNORE)

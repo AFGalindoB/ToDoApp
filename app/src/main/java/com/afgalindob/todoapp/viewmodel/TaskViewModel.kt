@@ -2,23 +2,42 @@ package com.afgalindob.todoapp.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.afgalindob.todoapp.data.local.db.Converters
 import com.afgalindob.todoapp.data.local.entity.TaskEntity
 import com.afgalindob.todoapp.data.repository.TaskRepository
 import com.afgalindob.todoapp.schema.TaskSchema
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 
+enum class TaskFilter {
+    ALL,
+    PENDING,
+    BY_DATE
+}
+
+@OptIn(ExperimentalCoroutinesApi::class)
 class TaskViewModel(private val repository: TaskRepository) : ViewModel() {
 
-    val tasks = repository
-        .getAllTasksStream()
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
-            initialValue = emptyList()
-        )
+    private val filter = MutableStateFlow(TaskFilter.ALL)
+
+    val tasks = filter.flatMapLatest { filterType ->
+        when (filterType) {
+            TaskFilter.ALL -> repository.getAllTasksStream()
+            TaskFilter.PENDING -> repository.getPendingTasks()
+            TaskFilter.BY_DATE -> repository.getTasksByDate()
+        }
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = emptyList()
+    )
+
+    fun setFilter(taskFilter: TaskFilter) {
+        filter.value = taskFilter
+    }
 
     fun validate(values: Map<String, String>): Map<String, String> {
 

@@ -1,11 +1,16 @@
 package com.afgalindob.todoapp.ui.screens
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import com.afgalindob.todoapp.ui.components.TaskCard
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.Button
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -29,6 +34,7 @@ import com.afgalindob.todoapp.viewmodel.TaskViewModel
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.ui.Alignment
 import com.afgalindob.todoapp.data.local.entity.toFormMap
+import com.afgalindob.todoapp.viewmodel.TaskFilter
 
 @Composable
 fun TaskListScreen(viewModel: TaskViewModel){
@@ -43,33 +49,52 @@ fun TaskListScreen(viewModel: TaskViewModel){
         val taskErrors = remember { mutableStateMapOf<String,String>() }
 
         Box(modifier = Modifier.fillMaxSize()){
-            LazyColumn {
-                item { Text(stringResource(R.string.task_list_title)) }
+            Column {
+                Text(stringResource(R.string.task_list_title))
+                Row {
+                    Button(onClick = { viewModel.setFilter(TaskFilter.ALL) }) {
+                        Text("Todas")
+                    }
 
-                items(tasks) {task ->
+                    Spacer(Modifier.width(8.dp))
 
-                    TaskCard(
-                        task = task,
+                    Button(onClick = { viewModel.setFilter(TaskFilter.PENDING) }) {
+                        Text("Pendientes")
+                    }
 
-                        onToggleCompleted = { completed ->
-                            val values = task.toFormMap().toMutableMap()
-                            values["completed"] = completed.toString()
+                    Spacer(Modifier.width(8.dp))
 
-                            viewModel.updateTask(task, values)
-                        },
+                    Button(onClick = { viewModel.setFilter(TaskFilter.BY_DATE) }) {
+                        Text("Por fecha")
+                    } }
+                LazyColumn {
 
-                        onEdit = {
-                            editingTask = task
-                            dialogMode = "edit"
-                            taskErrors.clear()
-                        },
+                    items(tasks) {task ->
 
-                        onDelete = {
-                            deletingTask = task
-                        }
-                    )
+                        TaskCard(
+                            task = task,
+
+                            onToggleCompleted = { completed ->
+                                val values = task.toFormMap().toMutableMap()
+                                values["completed"] = completed.toString()
+
+                                viewModel.updateTask(task, values)
+                            },
+
+                            onEdit = {
+                                editingTask = task
+                                dialogMode = "edit"
+                                taskErrors.clear()
+                            },
+
+                            onDelete = {
+                                deletingTask = task
+                            }
+                        )
+                    }
                 }
             }
+
             FloatingActionButton(
                 onClick = {
                     editingTask = null
