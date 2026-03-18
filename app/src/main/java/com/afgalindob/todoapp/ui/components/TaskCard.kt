@@ -1,6 +1,7 @@
 package com.afgalindob.todoapp.ui.components
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -9,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -24,8 +26,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.afgalindob.todoapp.R
 import com.afgalindob.todoapp.data.local.entity.TaskEntity
@@ -34,6 +39,7 @@ import com.afgalindob.todoapp.schema.TaskSchema
 @Composable
 fun TaskCard(
     task: TaskEntity,
+    textColor: Color,
     onToggleCompleted: (Boolean) -> Unit,
     onEdit: () -> Unit,
     onDelete: () -> Unit
@@ -76,15 +82,21 @@ fun TaskCard(
 
                     Text(
                         text = title,
-                        style = MaterialTheme.typography.titleMedium
+                        style = MaterialTheme.typography.titleMedium,
+                        color = textColor,
+                        maxLines = if (expanded) Int.MAX_VALUE else 1,
+                        overflow = if (expanded) TextOverflow.Clip else TextOverflow.Ellipsis
                     )
 
-                    dateField.type.RenderDisplay(dateField, values, MaterialTheme.typography.bodySmall)
+                    dateField.type.RenderDisplay(
+                        dateField,
+                        values,
+                        MaterialTheme.typography.bodySmall,
+                        colorText = textColor
+                    )
                 }
 
-                IconButton(
-                    onClick = { expanded = !expanded }
-                ) {
+                IconButton( onClick = {expanded = !expanded} ) {
                     Icon(
                         painter = painterResource(R.drawable.expand_more),
                         contentDescription = "Expand"
@@ -98,42 +110,38 @@ fun TaskCard(
 
                     Spacer(Modifier.height(10.dp))
 
-                    Text(description)
+                    Row (modifier = Modifier.fillMaxWidth()){
+                        Text(
+                            description, color = textColor,
+                            modifier = Modifier.weight(1f).padding(end = 8.dp)
+                        )
 
-                    Spacer(Modifier.height(10.dp))
-
-                    Column {
-
-                        Button(onClick = onEdit, modifier = Modifier.fillMaxWidth()) {
-                            Row(
-                                horizontalArrangement = Arrangement.Center,
-                                verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier.fillMaxWidth()
-                            ){
-                                Icon(
-                                    painter = painterResource(R.drawable.edit),
-                                    contentDescription = "Edit Task"
-                                )
-                                Spacer(modifier = Modifier.width(5.dp))
-                                Text(stringResource(R.string.edit_task))
-                            }
+                        IconButton(
+                            onClick = onEdit,
+                            modifier = Modifier.clip(CircleShape).background(Color.LightGray)
+                        ) {
+                            Icon(
+                                painter = painterResource(R.drawable.edit),
+                                contentDescription = "Edit Task",
+                                tint = Color.Black
+                            )
                         }
+                    }
 
-                        Spacer(Modifier.height(5.dp))
+                    Spacer(Modifier.height(5.dp))
 
-                        Button(onClick = onDelete, modifier = Modifier.fillMaxWidth()) {
-                            Row(
-                                horizontalArrangement = Arrangement.Center,
-                                verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier.fillMaxWidth()
-                            ){
-                                Icon(
-                                    painter = painterResource(R.drawable.delete),
-                                    contentDescription = "Delete Task"
-                                )
-                                Spacer(modifier = Modifier.width(5.dp))
-                                Text(stringResource(R.string.delete_task))
-                            }
+                    Button(onClick = onDelete, modifier = Modifier.fillMaxWidth()) {
+                        Row(
+                            horizontalArrangement = Arrangement.Center,
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.fillMaxWidth()
+                        ){
+                            Icon(
+                                painter = painterResource(R.drawable.delete),
+                                contentDescription = "Delete Task"
+                            )
+                            Spacer(modifier = Modifier.width(5.dp))
+                            Text(stringResource(R.string.delete_task))
                         }
                     }
                 }

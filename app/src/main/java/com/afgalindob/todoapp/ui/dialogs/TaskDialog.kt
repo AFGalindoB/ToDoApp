@@ -14,6 +14,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.afgalindob.todoapp.R
@@ -24,6 +25,7 @@ import com.afgalindob.todoapp.schema.TaskSchema
 @Composable 
 fun TaskDialog(
     task: TaskEntity? = null,
+    colorText: Color,
     errors: Map<String,String> = emptyMap(),
     onConfirm: (Map<String,String>) -> Unit,
     onDismiss: () -> Unit
@@ -45,7 +47,8 @@ fun TaskDialog(
                 text = if (isEditing)
                     stringResource(R.string.edit_task)
                 else
-                    stringResource(R.string.new_task_title)
+                    stringResource(R.string.new_task_title),
+                color = colorText
             )
         },
 

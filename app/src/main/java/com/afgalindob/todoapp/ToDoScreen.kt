@@ -10,6 +10,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -95,6 +96,8 @@ fun ToDoApp(
     val viewModel: TaskViewModel = viewModel {
         TaskViewModel(repository)
     }
+    val textColor: Color = Color.White
+    val backgroundColor: Color = Color.Black
 
     Scaffold (
         bottomBar = { ToDoBottomBar(navController) }
@@ -104,10 +107,10 @@ fun ToDoApp(
                 modifier = Modifier.padding(innerPadding)
         ) {
             composable(ToDoScreen.TaskList.name){
-                TaskListScreen(viewModel)
+                TaskListScreen(viewModel, textColor, backgroundColor)
             }
             composable(ToDoScreen.Account.name){
-                AccountScreen()
+                AccountScreen(textColor, backgroundColor)
             }
         }
     }

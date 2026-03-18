@@ -1,11 +1,13 @@
 package com.afgalindob.todoapp.ui.screens
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import com.afgalindob.todoapp.ui.components.TaskCard
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
@@ -36,10 +38,19 @@ import androidx.compose.ui.Alignment
 import com.afgalindob.todoapp.data.local.entity.toFormMap
 import com.afgalindob.todoapp.viewmodel.TaskFilter
 
-@Composable
-fun TaskListScreen(viewModel: TaskViewModel){
+enum class TypeTaskDialog(){
+    New,
+    Edit
+}
 
-    Surface(modifier = Modifier.fillMaxSize(), color = Color.Black) {
+@Composable
+fun TaskListScreen(
+    viewModel: TaskViewModel,
+    textColor: Color,
+    backgroundColor: Color
+){
+
+    Surface(modifier = Modifier.fillMaxSize(), color = backgroundColor) {
 
         val tasks by viewModel.tasks.collectAsState()
 
@@ -50,25 +61,33 @@ fun TaskListScreen(viewModel: TaskViewModel){
 
         Box(modifier = Modifier.fillMaxSize()){
             Column {
-                Text(stringResource(R.string.task_list_title))
-                Row {
+                Row (
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center
+                ){
                     Button(onClick = { viewModel.setFilter(TaskFilter.ALL) }) {
-                        Text("Todas")
+                        Text(stringResource(R.string.filter_all))
                     }
 
                     Spacer(Modifier.width(8.dp))
 
                     Button(onClick = { viewModel.setFilter(TaskFilter.PENDING) }) {
-                        Text("Pendientes")
+                        Text(stringResource(R.string.filter_pending))
                     }
 
                     Spacer(Modifier.width(8.dp))
 
                     Button(onClick = { viewModel.setFilter(TaskFilter.BY_DATE) }) {
-                        Text("Por fecha")
-                    } }
+                        Text(stringResource(R.string.filter_by_date))
+                    }
+                }
+                if (tasks.isEmpty()){
+                    Text(
+                        stringResource(R.string.task_list_placeholder),
+                        color = textColor
+                    )
+                }
                 LazyColumn {
-
                     items(tasks) {task ->
 
                         TaskCard(
@@ -81,9 +100,11 @@ fun TaskListScreen(viewModel: TaskViewModel){
                                 viewModel.updateTask(task, values)
                             },
 
+                            textColor = textColor,
+
                             onEdit = {
                                 editingTask = task
-                                dialogMode = "edit"
+                                dialogMode = TypeTaskDialog.Edit.name
                                 taskErrors.clear()
                             },
 
@@ -98,7 +119,7 @@ fun TaskListScreen(viewModel: TaskViewModel){
             FloatingActionButton(
                 onClick = {
                     editingTask = null
-                    dialogMode = "new"
+                    dialogMode = TypeTaskDialog.New.name
                     taskErrors.clear()
                 },
                 modifier = Modifier
@@ -113,17 +134,18 @@ fun TaskListScreen(viewModel: TaskViewModel){
 
         if (dialogMode != null) {
             TaskDialog(
-                task = if (dialogMode == "edit") editingTask else null,
+                task = if (dialogMode == TypeTaskDialog.Edit.name) editingTask else null,
                 errors = taskErrors,
+                colorText = textColor,
                 onConfirm = { values ->
                     val validationErrors = viewModel.validate(values)
                     taskErrors.clear()
                     taskErrors.putAll(validationErrors)
 
                     if (validationErrors.isEmpty()) {
-                        if (dialogMode == "new") {
+                        if (dialogMode == TypeTaskDialog.New.name) {
                             viewModel.createTask(values)
-                        } else if (dialogMode == "edit" && editingTask != null) {
+                        } else if (dialogMode == TypeTaskDialog.Edit.name && editingTask != null) {
                             viewModel.updateTask(editingTask!!, values)
                         }
                         dialogMode = null

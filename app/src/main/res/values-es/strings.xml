@@ -2,7 +2,7 @@
 <resources>
     <string name="app_name">ToDoApp</string>
     <string name="new_task_title">Nueva Tarea</string>
-    <string name="task_list_title">Lista de Tareas</string>
+    <string name="task_list_placeholder">Aún no tienes tareas\\nToca el botón + para crear una</string>
     <string name="delete_task_dialog">¿Desea eliminar esta tarea?</string>
     <string name="title_task">Titulo</string>
     <string name="description">Descripcion</string>
@@ -17,4 +17,7 @@
     <string name="tasks_option">Tareas</string>
     <string name="account_option">Mi Cuenta</string>
     <string name="delete_option">Eliminar</string>
+    <string name="filter_all">Todas</string>
+    <string name="filter_pending">Pendientes</string>
+    <string name="filter_by_date">Por Fecha</string>
 </resources>

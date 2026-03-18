@@ -17,6 +17,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardCapitalization
@@ -52,7 +53,8 @@ sealed class FieldType {
     abstract fun RenderDisplay(
         field: FormField,
         values: Map<String, String>,
-        style: TextStyle = LocalTextStyle.current
+        style: TextStyle = LocalTextStyle.current,
+        colorText: Color
     )
 }
 
@@ -84,12 +86,14 @@ object TextFieldType : FieldType() {
     override fun RenderDisplay(
         field: FormField,
         values: Map<String, String>,
-        style: TextStyle
+        style: TextStyle,
+        colorText: Color
     ) {
 
         Text(
             text = values[field.key] ?: "",
-            style = style
+            style = style,
+            color = colorText
         )
     }
 }
@@ -122,12 +126,14 @@ object MultilineFieldType : FieldType() {
     override fun RenderDisplay(
         field: FormField,
         values: Map<String, String>,
-        style: TextStyle
+        style: TextStyle,
+        colorText: Color
     ) {
 
         Text(
             text = values[field.key] ?: "",
-            style = style
+            style = style,
+            color = colorText
         )
     }
 }
@@ -164,7 +170,8 @@ object BooleanFieldType : FieldType() {
     override fun RenderDisplay(
         field: FormField,
         values: Map<String, String>,
-        style: TextStyle
+        style: TextStyle,
+        colorText: Color
     ) {
 
         val checked = values[field.key]?.toBoolean() ?: false
@@ -172,7 +179,8 @@ object BooleanFieldType : FieldType() {
         Text(
             text = if (checked) "✔ ${stringResource(field.labelRes)}"
             else "✘ ${stringResource(field.labelRes)}",
-            style = style
+            style = style,
+            color = colorText
         )
     }
 }
@@ -255,7 +263,8 @@ object DateFieldType : FieldType() {
     override fun RenderDisplay(
         field: FormField,
         values: Map<String, String>,
-        style: TextStyle
+        style: TextStyle,
+        colorText: Color
     ) {
         val value = values[field.key]
 
@@ -264,7 +273,7 @@ object DateFieldType : FieldType() {
         val displayDate = getDisplayDate(value)
 
         displayDate?.let {
-            Text(text = it, style = style)
+            Text(text = it, style = style, color = colorText)
         }
     }
 }

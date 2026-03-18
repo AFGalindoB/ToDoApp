@@ -45,9 +45,16 @@ class TaskViewModel(private val repository: TaskRepository) : ViewModel() {
 
         TaskSchema.fields.forEach { field ->
 
-            if (field.required) {
-                val value = values[field.key]
-                if (value.isNullOrBlank()) { errors[field.key] = "Required field" }
+            val value = values[field.key]
+
+            if (field.required && value.isNullOrBlank()) {
+                errors[field.key] = "Required field"
+            }
+
+            field.maxLenghtChar?.let{ max ->
+                if (value != null && value.length > max){
+                    errors[field.key] = "Max $max characters"
+                }
             }
 
         }

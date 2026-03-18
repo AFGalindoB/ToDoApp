@@ -14,6 +14,6 @@ data class FormField(
     val key: String,
     val labelRes: Int,
     val type: FieldType,
-    val required: Boolean = false
-
+    val required: Boolean = false,
+    val maxLenghtChar: Int? = null
 )

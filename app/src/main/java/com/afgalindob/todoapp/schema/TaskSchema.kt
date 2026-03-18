@@ -20,7 +20,8 @@ object TaskSchema {
             key = "title",
             labelRes = R.string.title_task,
             type = TextFieldType,
-            required = true
+            required = true,
+            maxLenghtChar = 70
         ),
 
         FormField(

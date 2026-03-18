@@ -128,6 +128,7 @@ fun CalendarDialog(
 
                         DayView(
                             month = currentMonth,
+                            color = color,
                             selectedDate = tempSelectedDate,
                             onDateSelected = { date ->
 
@@ -214,6 +215,7 @@ fun Header(
 @Composable
 fun DayView(
     month: YearMonth,
+    color: Color,
     selectedDate: LocalDate?,
     onDateSelected: (LocalDate) -> Unit
 ) {
@@ -255,7 +257,7 @@ fun DayView(
                     color =
                         if (selected)
                             MaterialTheme.colorScheme.onPrimary
-                        else MaterialTheme.colorScheme.onSurface
+                        else color
                 )
             }
         }
