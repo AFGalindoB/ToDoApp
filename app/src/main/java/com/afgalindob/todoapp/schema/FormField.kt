@@ -12,7 +12,7 @@ package com.afgalindob.todoapp.schema
 
 data class FormField(
     val key: String,
-    val labelRes: Int,
+    val labelRes: Int? = null,
     val type: FieldType,
     val required: Boolean = false,
     val maxLenghtChar: Int? = null

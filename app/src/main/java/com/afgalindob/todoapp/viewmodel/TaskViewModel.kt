@@ -3,14 +3,20 @@ package com.afgalindob.todoapp.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.afgalindob.todoapp.data.local.entity.TaskEntity
+import com.afgalindob.todoapp.data.mapper.TaskMapper.toDomain
 import com.afgalindob.todoapp.data.repository.TaskRepository
+import com.afgalindob.todoapp.schema.TaskDomain
+import com.afgalindob.todoapp.schema.TaskFormState
 import com.afgalindob.todoapp.schema.TaskSchema
+import com.afgalindob.todoapp.utils.DateUtils
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.map
 
 enum class TaskFilter {
     ALL,
@@ -23,6 +29,7 @@ class TaskViewModel(private val repository: TaskRepository) : ViewModel() {
 
     private val filter = MutableStateFlow(TaskFilter.ALL)
 
+    // Obtener las tareas de la base de datos y aplicar el filtro
     val tasks = filter.flatMapLatest { filterType ->
         when (filterType) {
             TaskFilter.ALL -> repository.getAllTasksStream()
@@ -34,6 +41,16 @@ class TaskViewModel(private val repository: TaskRepository) : ViewModel() {
         started = SharingStarted.WhileSubscribed(5000),
         initialValue = emptyList()
     )
+
+    // Hacer la conversion de dominios entre la base de datos y la UI
+    val tasksDomain: StateFlow<List<TaskDomain>> =
+        tasks
+            .map { list -> list.map { it.toDomain() } }
+            .stateIn(
+                viewModelScope,
+                SharingStarted.WhileSubscribed(5000),
+                emptyList()
+            )
 
     fun setFilter(taskFilter: TaskFilter) {
         filter.value = taskFilter
@@ -62,14 +79,15 @@ class TaskViewModel(private val repository: TaskRepository) : ViewModel() {
         return errors
     }
 
-    fun createTask(values: Map<String,String>) {
+    fun createTask(form: TaskFormState) {
         viewModelScope.launch {
-            val now = System.currentTimeMillis()
+            val now = DateUtils.now()
+
             val task = TaskEntity(
-                title = values["title"] ?: "",
-                description = values["description"] ?: "",
-                date = values["date"] ?: "",
-                completed = values["completed"] == "true",
+                title = form.title,
+                content = form.content,
+                date = form.date ?: 0L,
+                completed = form.completed,
                 createdAt = now,
                 updatedAt = now
             )
@@ -78,22 +96,24 @@ class TaskViewModel(private val repository: TaskRepository) : ViewModel() {
         }
     }
 
-    fun deleteTask(task: TaskEntity) {
+    fun deleteTask(task: TaskDomain) {
         viewModelScope.launch {
-            repository.deleteTask(task)
+            repository.deleteTaskById(task.id)
         }
     }
 
-    fun updateTask(task: TaskEntity, values: Map<String,String>) {
+    fun updateTask(task: TaskDomain, form: TaskFormState) {
         viewModelScope.launch {
-            val updatedTask = task.copy(
-                title = values["title"] ?: "",
-                description = values["description"] ?: "",
-                date = values["date"] ?: "",
-                completed = values["completed"] == "true",
-                updatedAt = System.currentTimeMillis()
+            val data = TaskEntity(
+                id = task.id,
+                title = form.title,
+                content = form.content,
+                date = form.date ?: 0L,
+                completed = form.completed,
+                createdAt = task.createdAt,
+                updatedAt = DateUtils.now()
             )
-            repository.updateTask(updatedTask)
+                repository.updateTask(data)
         }
     }
 }

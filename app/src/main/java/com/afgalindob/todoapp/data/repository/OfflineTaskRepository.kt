@@ -20,8 +20,8 @@ class OfflineTaskRepository(
     override suspend fun insertTask(task: TaskEntity) =
         taskDao.insert(task)
 
-    override suspend fun deleteTask(task: TaskEntity) =
-        taskDao.delete(task)
+    override suspend fun deleteTaskById(id: Long) =
+        taskDao.deleteTaskById(id)
 
     override suspend fun updateTask(task: TaskEntity) =
         taskDao.update(task)

@@ -1,7 +1,6 @@
 package com.afgalindob.todoapp.data.local.dao
 
 import androidx.room.Dao
-import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
@@ -24,8 +23,8 @@ interface TaskDao {
     @Insert(onConflict = OnConflictStrategy.Companion.IGNORE)
     suspend fun insert(task: TaskEntity): Long
 
-    @Delete
-    suspend fun delete(task: TaskEntity)
+    @Query("DELETE FROM tasks WHERE id = :id")
+    suspend fun deleteTaskById(id: Long)
 
     @Update
     suspend fun update(task: TaskEntity)

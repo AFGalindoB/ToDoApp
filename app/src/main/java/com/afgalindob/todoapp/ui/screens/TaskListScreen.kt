@@ -29,13 +29,14 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.afgalindob.todoapp.R
-import com.afgalindob.todoapp.data.local.entity.TaskEntity
 import com.afgalindob.todoapp.ui.dialogs.DeleteTaskDialog
 import com.afgalindob.todoapp.ui.dialogs.TaskDialog
 import com.afgalindob.todoapp.viewmodel.TaskViewModel
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.ui.Alignment
-import com.afgalindob.todoapp.data.local.entity.toFormMap
+import com.afgalindob.todoapp.data.mapper.TaskMapper.toFormState
+import com.afgalindob.todoapp.schema.TaskDomain
+import com.afgalindob.todoapp.schema.TaskFormState
 import com.afgalindob.todoapp.viewmodel.TaskFilter
 
 enum class TypeTaskDialog(){
@@ -52,11 +53,11 @@ fun TaskListScreen(
 
     Surface(modifier = Modifier.fillMaxSize(), color = backgroundColor) {
 
-        val tasks by viewModel.tasks.collectAsState()
+        val tasks by viewModel.tasksDomain.collectAsState()
 
         var dialogMode by remember { mutableStateOf<String?>(null) }
-        var editingTask by remember { mutableStateOf<TaskEntity?>(null) }
-        var deletingTask by remember { mutableStateOf<TaskEntity?>(null) }
+        var editingTask by remember { mutableStateOf<TaskDomain?>(null) }
+        var deletingTask by remember { mutableStateOf<TaskDomain?>(null) }
         val taskErrors = remember { mutableStateMapOf<String,String>() }
 
         Box(modifier = Modifier.fillMaxSize()){
@@ -94,10 +95,9 @@ fun TaskListScreen(
                             task = task,
 
                             onToggleCompleted = { completed ->
-                                val values = task.toFormMap().toMutableMap()
-                                values["completed"] = completed.toString()
 
-                                viewModel.updateTask(task, values)
+                                val updatedForm = task.toFormState().copy(completed = completed)
+                                viewModel.updateTask(task, updatedForm)
                             },
 
                             textColor = textColor,
@@ -138,16 +138,36 @@ fun TaskListScreen(
                 errors = taskErrors,
                 colorText = textColor,
                 onConfirm = { values ->
+
+                    // Validación
                     val validationErrors = viewModel.validate(values)
                     taskErrors.clear()
                     taskErrors.putAll(validationErrors)
 
                     if (validationErrors.isEmpty()) {
+                        // Convertir Map<String,String> a TaskDomain parcial
+                        val taskForm = TaskFormState(
+                            title = values["title"] ?: "",
+                            content = values["content"] ?: "",
+                            date = values["date"]?.toLongOrNull(),
+                            completed = values["completed"] == "true"
+                        )
+
                         if (dialogMode == TypeTaskDialog.New.name) {
-                            viewModel.createTask(values)
+                            // Para nueva tarea, TaskDomain se construye dentro del ViewModel
+                            viewModel.createTask(taskForm)
                         } else if (dialogMode == TypeTaskDialog.Edit.name && editingTask != null) {
-                            viewModel.updateTask(editingTask!!, values)
+                            // Para edición, se mantiene el id de TaskDomain original
+                            val taskForm = TaskFormState(
+                                title = values["title"] ?: "",
+                                content = values["content"] ?: "",
+                                date = values["date"]?.toLongOrNull(),
+                                completed = values["completed"] == "true"
+                            )
+                            viewModel.updateTask(editingTask!!, taskForm)
                         }
+
+                        // Cerrar diálogo
                         dialogMode = null
                         editingTask = null
                     }

@@ -33,12 +33,12 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.afgalindob.todoapp.R
-import com.afgalindob.todoapp.data.local.entity.TaskEntity
-import com.afgalindob.todoapp.schema.TaskSchema
+import com.afgalindob.todoapp.schema.TaskDomain
+import com.afgalindob.todoapp.utils.DateUtils
 
 @Composable
 fun TaskCard(
-    task: TaskEntity,
+    task: TaskDomain,
     textColor: Color,
     onToggleCompleted: (Boolean) -> Unit,
     onEdit: () -> Unit,
@@ -48,11 +48,8 @@ fun TaskCard(
     var expanded by remember { mutableStateOf(false) }
 
     val title = task.title
-    val description = task.description
+    val content = task.content
     val completed = task.completed
-
-    val values = mapOf("date" to task.date)
-    val dateField = TaskSchema.fields.first { it.key == "date" }
 
     Card(
         modifier = Modifier
@@ -88,12 +85,13 @@ fun TaskCard(
                         overflow = if (expanded) TextOverflow.Clip else TextOverflow.Ellipsis
                     )
 
-                    dateField.type.RenderDisplay(
-                        dateField,
-                        values,
-                        MaterialTheme.typography.bodySmall,
-                        colorText = textColor
-                    )
+                    task.date?.let {
+                        Text(
+                            text = DateUtils.formatReadable(DateUtils.fromTimestamp(it)),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = textColor
+                        )
+                    }
                 }
 
                 IconButton( onClick = {expanded = !expanded} ) {
@@ -112,7 +110,7 @@ fun TaskCard(
 
                     Row (modifier = Modifier.fillMaxWidth()){
                         Text(
-                            description, color = textColor,
+                            content, color = textColor,
                             modifier = Modifier.weight(1f).padding(end = 8.dp)
                         )
 

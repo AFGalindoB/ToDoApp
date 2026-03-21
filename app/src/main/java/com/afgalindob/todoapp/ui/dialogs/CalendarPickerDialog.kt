@@ -25,7 +25,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import java.time.LocalDate
 import java.time.YearMonth
@@ -34,7 +33,8 @@ import java.time.Month
 import androidx.compose.ui.window.Dialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import java.time.format.DateTimeFormatter
+import androidx.compose.ui.res.stringResource
+import com.afgalindob.todoapp.utils.DateUtils
 import java.time.format.TextStyle
 import java.util.Locale
 
@@ -46,15 +46,17 @@ enum class CalendarViewMode {
 @Composable
 fun CalendarDialog(
     selectedDate: LocalDate?,
-    onDateSelected: (String) -> Unit,
+    onDateSelected: (Long) -> Unit,
     onDismiss: () -> Unit,
-    color: Color = Color.White
+    contentColor: Color = Color.White,
+    backgroundColor: Color = Color.Black
 ) {
     Dialog(onDismissRequest = onDismiss) {
 
         Card(
             colors = CardDefaults.cardColors(
-                containerColor = Color.Black
+                containerColor = backgroundColor,
+                contentColor = contentColor
             )
         ) {
 
@@ -68,11 +70,9 @@ fun CalendarDialog(
             var tempSelectedDate by remember(selectedDate) {
                 mutableStateOf(selectedDate)
             }
-            val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
 
             Column (
                 modifier = Modifier
-                    .background(Color.Black)
                     .padding(8.dp)
             ){
 
@@ -81,29 +81,32 @@ fun CalendarDialog(
                     viewMode = viewMode,
 
                     onPrev = {
-                        if (viewMode == CalendarViewMode.DAY) {
-                            currentMonth = currentMonth.minusMonths(1)
-                        } else {
-                            currentMonth = currentMonth.minusYears(1)
-                        }
+                        currentMonth =
+                            if (viewMode == CalendarViewMode.DAY)
+                                currentMonth.minusMonths(1)
+                            else
+                                currentMonth.minusYears(1)
+
                     },
 
                     onNext = {
-                        if (viewMode == CalendarViewMode.DAY) {
-                            currentMonth = currentMonth.plusMonths(1)
-                        } else {
-                            currentMonth = currentMonth.plusYears(1)
-                        }
+                        currentMonth =
+                            if (viewMode == CalendarViewMode.DAY)
+                                 currentMonth.plusMonths(1)
+                            else
+                                 currentMonth.plusYears(1)
+
                     },
 
-                    onMonthClick = {
+                    onLabelClick = {
                         viewMode =
                             if (viewMode == CalendarViewMode.DAY)
                                 CalendarViewMode.MONTH
                             else
                                 CalendarViewMode.DAY
                     },
-                    color = color
+
+                    contentColor = contentColor
 
                 )
 
@@ -115,25 +118,36 @@ fun CalendarDialog(
                             horizontalArrangement = Arrangement.SpaceAround
                         ) {
 
-                            val days = listOf("Mo","Tu","We","Th","Fr","Sa","Su")
+                            val days = listOf(
+                                R.string.monday_day_picker,
+                                R.string.tuesday_day_picker,
+                                R.string.wednesday_day_picker,
+                                R.string.thursday_day_picker,
+                                R.string.friday_day_picker,
+                                R.string.saturday_day_picker,
+                                R.string.sunday_day_picker
+                            )
 
-                            days.forEach {
+                            days.forEachIndexed { index, day ->
+
+                                val isLast = index == days.lastIndex
+
                                 Text(
-                                    text = it,
+                                    text = stringResource(day),
                                     style = MaterialTheme.typography.bodySmall,
-                                    color = Color.White
+                                    color = if (isLast) Color.Magenta else contentColor
                                 )
                             }
                         }
 
                         DayView(
                             month = currentMonth,
-                            color = color,
+                            contentColor = contentColor,
                             selectedDate = tempSelectedDate,
                             onDateSelected = { date ->
 
                                 if (tempSelectedDate == date) {
-                                    onDateSelected(date.format(formatter))
+                                    onDateSelected(DateUtils.toTimestamp(date))
                                     onDismiss()
                                 } else {
                                     tempSelectedDate = date
@@ -147,7 +161,7 @@ fun CalendarDialog(
                             currentMonth = YearMonth.of(currentMonth.year, it)
                             viewMode = CalendarViewMode.DAY
                         },
-                        color = color
+                        contentColor = contentColor
                     )
                 }
             }
@@ -161,8 +175,8 @@ fun Header(
     viewMode: CalendarViewMode,
     onPrev: () -> Unit,
     onNext: () -> Unit,
-    onMonthClick: () -> Unit,
-    color: Color
+    onLabelClick: () -> Unit,
+    contentColor: Color
 ) {
 
     Row(
@@ -176,7 +190,7 @@ fun Header(
             Icon(
                 painter = painterResource(R.drawable.previous),
                 contentDescription = "Previous",
-                tint = color
+                tint = contentColor
             )
         }
 
@@ -196,17 +210,17 @@ fun Header(
                     currentMonth.year.toString()
                 },
             modifier = Modifier
-                .clickable { onMonthClick() }
+                .clickable { onLabelClick() }
                 .padding(horizontal = 6.dp),
             style = MaterialTheme.typography.titleMedium,
-            color = color
+            color = contentColor
         )
 
         IconButton(onClick = onNext) {
             Icon(
                 painter = painterResource(R.drawable.forward),
                 contentDescription = "Next",
-                tint = color
+                tint = contentColor
             )
         }
     }
@@ -215,7 +229,7 @@ fun Header(
 @Composable
 fun DayView(
     month: YearMonth,
-    color: Color,
+    contentColor: Color,
     selectedDate: LocalDate?,
     onDateSelected: (LocalDate) -> Unit
 ) {
@@ -254,10 +268,8 @@ fun DayView(
 
                 Text(
                     text = day.toString(),
-                    color =
-                        if (selected)
-                            MaterialTheme.colorScheme.onPrimary
-                        else color
+                    color = if (selected) MaterialTheme.colorScheme.onPrimary
+                            else contentColor
                 )
             }
         }
@@ -267,7 +279,7 @@ fun DayView(
 @Composable
 fun MonthView(
     onMonthSelected: (Int) -> Unit,
-    color: Color
+    contentColor: Color
 ) {
 
     val months = Month.entries.toTypedArray()
@@ -291,26 +303,9 @@ fun MonthView(
                         TextStyle.FULL,
                         Locale.getDefault()
                     ).replaceFirstChar { it.uppercase() },
-                    color = color
+                    color = contentColor
                 )
             }
         }
     }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun CalendarPickerPreview() {
-
-    var selectedDate by remember {
-        mutableStateOf(LocalDate.now())
-    }
-
-    CalendarDialog(
-        selectedDate = selectedDate,
-        onDateSelected = {
-            selectedDate = LocalDate.parse(it)
-        },
-        onDismiss = {}
-    )
 }

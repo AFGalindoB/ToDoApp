@@ -24,6 +24,7 @@ import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.afgalindob.todoapp.ui.dialogs.CalendarDialog
+import com.afgalindob.todoapp.utils.DateUtils
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.Locale
@@ -72,7 +73,11 @@ object TextFieldType : FieldType() {
             onValueChange = {
                 onValueChange(field.key, it)
             },
-            label = { Text(stringResource(field.labelRes)) },
+            label = {
+                field.labelRes?.let {
+                    Text(stringResource(field.labelRes))
+                }
+            },
             singleLine = true,
             keyboardOptions = KeyboardOptions.Default.copy(
                 keyboardType = KeyboardType.Text,
@@ -112,7 +117,11 @@ object MultilineFieldType : FieldType() {
             onValueChange = {
                 onValueChange(field.key, it)
             },
-            label = { Text(stringResource(field.labelRes)) },
+            label = {
+                field.labelRes?.let {
+                    Text(stringResource(field.labelRes))
+                }
+            },
             singleLine = false,
             keyboardOptions = KeyboardOptions.Default.copy(
                 keyboardType = KeyboardType.Text,
@@ -162,7 +171,9 @@ object BooleanFieldType : FieldType() {
                 }
             )
 
-            Text(stringResource(field.labelRes))
+            field.labelRes?.let {
+                Text(stringResource(field.labelRes))
+            }
         }
     }
 
@@ -176,38 +187,19 @@ object BooleanFieldType : FieldType() {
 
         val checked = values[field.key]?.toBoolean() ?: false
 
-        Text(
-            text = if (checked) "✔ ${stringResource(field.labelRes)}"
-            else "✘ ${stringResource(field.labelRes)}",
-            style = style,
-            color = colorText
-        )
+        field.labelRes?.let {
+            Text(
+                text =
+                    if (checked) "✔ ${stringResource(field.labelRes)}"
+                    else "✘ ${stringResource(field.labelRes)}",
+                style = style,
+                color = colorText
+            )
+        }
     }
 }
 
 object DateFieldType : FieldType() {
-
-    private fun getDisplayDate(value: String?): String? {
-        if (value.isNullOrBlank()) return null
-
-        return try {
-            // Intento 1: Formato corto que está causando el crash (yy-MM-dd)
-            val inputFormatter = DateTimeFormatter.ofPattern("yy-MM-dd")
-            val date = LocalDate.parse(value, inputFormatter)
-            val outputFormatter = DateTimeFormatter.ofPattern("dd MMMM yyyy", Locale.getDefault())
-            date.format(outputFormatter)
-        } catch (e: Exception) {
-            try {
-                // Intento 2: Formato estándar ISO (yyyy-MM-dd)
-                val date = LocalDate.parse(value)
-                val outputFormatter = DateTimeFormatter.ofPattern("dd MMMM yyyy", Locale.getDefault())
-                date.format(outputFormatter)
-            } catch (e2: Exception) {
-                // Si falla todo, devolvemos null para no romper la app
-                null
-            }
-        }
-    }
 
     @Composable
     override fun RenderInput(
@@ -215,29 +207,28 @@ object DateFieldType : FieldType() {
         values: MutableMap<String, String>,
         onValueChange: (String, String) -> Unit
     ) {
-
         var showDialog by remember { mutableStateOf(false) }
-        val value = values[field.key]
 
-        val initialDate = value?.let {
-            try {
-                // Intentamos parsear con el formato corto o largo para el diálogo
-                val inputFormatter = DateTimeFormatter.ofPattern("yy-MM-dd")
-                LocalDate.parse(it, inputFormatter)
-            } catch (e: Exception) {
-                runCatching { LocalDate.parse(it) }.getOrElse { LocalDate.now() }
-            }
-        } ?: LocalDate.now()
+        // Obtener el valor actual como Long
+        val valueLong = values[field.key]?.toLongOrNull() ?: 0L
+
+        // Convertir Long a LocalDate
+        val initialDate = if (valueLong == 0L) LocalDate.now()
+        else DateUtils.fromTimestamp(valueLong)
 
         var selectedDate by remember(values[field.key]) {
             mutableStateOf(initialDate)
         }
 
-        val displayText = getDisplayDate(value) ?: stringResource(field.labelRes)
+        // Mostrar la fecha en un formato legible
+        val displayText = if (valueLong == 0L) {
+            field.labelRes?.let { stringResource(it) } ?: "Selecciona fecha"
+        } else {
+            DateUtils.formatReadable(selectedDate)
+        }
 
         Text(
             text = displayText,
-
             modifier = Modifier
                 .fillMaxWidth()
                 .clickable { showDialog = true }
@@ -247,14 +238,13 @@ object DateFieldType : FieldType() {
         if (showDialog) {
             CalendarDialog(
                 selectedDate = selectedDate,
-                onDateSelected = { dateString ->
-                    selectedDate = LocalDate.parse(dateString)
-                    onValueChange(field.key, dateString)
+                onDateSelected = { timestamp ->
+                    val date = DateUtils.fromTimestamp(timestamp)
+                    selectedDate = date
+                    onValueChange(field.key, timestamp.toString())
                     showDialog = false
                 },
-                onDismiss = {
-                    showDialog = false
-                }
+                onDismiss = { showDialog = false }
             )
         }
     }
@@ -266,14 +256,10 @@ object DateFieldType : FieldType() {
         style: TextStyle,
         colorText: Color
     ) {
-        val value = values[field.key]
+        val valueLong = values[field.key]?.toLongOrNull() ?: return
+        if (valueLong == 0L) return
 
-        if (value.isNullOrBlank()) return
-
-        val displayDate = getDisplayDate(value)
-
-        displayDate?.let {
-            Text(text = it, style = style, color = colorText)
-        }
+        val date = DateUtils.fromTimestamp(valueLong)
+        Text(text = DateUtils.formatReadable(date), style = style, color = colorText)
     }
 }

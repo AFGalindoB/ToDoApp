@@ -5,12 +5,12 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
-import com.afgalindob.todoapp.data.local.entity.TaskEntity
 import com.afgalindob.todoapp.R
+import com.afgalindob.todoapp.schema.TaskDomain
 
 @Composable
 fun DeleteTaskDialog(
-    task: TaskEntity,
+    task: TaskDomain,
     onConfirm: () -> Unit,
     onDismiss: () -> Unit
 ) {

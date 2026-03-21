@@ -18,13 +18,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.afgalindob.todoapp.R
-import com.afgalindob.todoapp.data.local.entity.TaskEntity
-import com.afgalindob.todoapp.data.local.entity.toFormMap
+import com.afgalindob.todoapp.data.mapper.TaskMapper.toFormState
+import com.afgalindob.todoapp.schema.TaskDomain
 import com.afgalindob.todoapp.schema.TaskSchema
 
 @Composable 
 fun TaskDialog(
-    task: TaskEntity? = null,
+    task: TaskDomain? = null,
     colorText: Color,
     errors: Map<String,String> = emptyMap(),
     onConfirm: (Map<String,String>) -> Unit,
@@ -32,11 +32,20 @@ fun TaskDialog(
 ) {
 
     val values = remember(task) {
-        mutableStateMapOf<String,String>().apply {
-            task?.let { putAll(it.toFormMap()) }
+        mutableStateMapOf<String, String>().apply {
+            val form = task?.toFormState()
+            if (form != null) {
+                this["title"] = form.title
+                this["content"] = form.content
+                this["date"] = form.date?.toString() ?: ""
+                this["completed"] = form.completed.toString()
+            } else {
+                TaskSchema.fields.forEach { field ->
+                    this[field.key] = ""
+                }
+            }
         }
     }
-
     val isEditing = task != null
 
     AlertDialog(

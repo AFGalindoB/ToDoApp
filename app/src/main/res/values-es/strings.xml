@@ -20,4 +20,11 @@
     <string name="filter_all">Todas</string>
     <string name="filter_pending">Pendientes</string>
     <string name="filter_by_date">Por Fecha</string>
+    <string name="monday_day_picker">Lun</string>
+    <string name="tuesday_day_picker">Mar</string>
+    <string name="wednesday_day_picker">Mie</string>
+    <string name="thursday_day_picker">Jue</string>
+    <string name="friday_day_picker">Vie</string>
+    <string name="saturday_day_picker">Sab</string>
+    <string name="sunday_day_picker">Dom</string>
 </resources>

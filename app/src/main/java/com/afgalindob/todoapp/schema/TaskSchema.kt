@@ -25,9 +25,8 @@ object TaskSchema {
         ),
 
         FormField(
-            key = "description",
-            labelRes = R.string.description,
-            type = MultilineFieldType,
+            key = "content",
+            type = MultilineFieldType
         ),
 
         FormField(
@@ -43,5 +42,4 @@ object TaskSchema {
         )
 
     )
-
 }
