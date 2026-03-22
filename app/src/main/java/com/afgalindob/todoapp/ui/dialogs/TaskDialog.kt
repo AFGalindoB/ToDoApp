@@ -1,6 +1,10 @@
 package com.afgalindob.todoapp.ui.dialogs
 
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -29,6 +33,14 @@ import com.afgalindob.todoapp.domain.TaskDomain
 import com.afgalindob.todoapp.domain.TaskFormState
 import com.afgalindob.todoapp.utils.DateUtils
 import java.time.LocalDate
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.width
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.unit.sp
 
 @Composable 
 fun TaskDialog(
@@ -70,43 +82,140 @@ fun TaskDialog(
 
         text = {
             Column(
-                modifier = Modifier.verticalScroll(rememberScrollState())
+                modifier = Modifier
+                    .verticalScroll(rememberScrollState())
             ) {
-                TextField(
-                    value = title,
-                    onValueChange = { title = it },
-                    label = { Text(stringResource(R.string.title_task)) },
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth()
-                )
+                // Campo título
+                var isFocused by remember { mutableStateOf(false) }
+
+                Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.CenterStart) {
+
+                    TextField(
+                        value = title,
+                        onValueChange = { title = it },
+                        singleLine = true,
+                        textStyle = MaterialTheme.typography.bodyLarge, // Asegura que el texto escrito se vea bien
+                        colors = TextFieldDefaults.colors(
+                            focusedContainerColor = Color.Transparent,
+                            unfocusedContainerColor = Color.Transparent,
+                            disabledContainerColor = Color.Transparent,
+                            focusedIndicatorColor = Color.Transparent,
+                            unfocusedIndicatorColor = Color.Transparent,
+                            disabledIndicatorColor = Color.Transparent,
+                            // Importante: eliminamos paddings internos ocultos si fuera necesario
+                        ),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .onFocusChanged { focusState ->
+                                isFocused = focusState.isFocused
+                            }
+                    )
+
+                    // 2. Placeholder CENTRADO (Visible solo cuando está vacío y SIN FOCO)
+                    // Usamos AnimatedVisibility normal (asegúrate de que el import sea androidx.compose.animation.AnimatedVisibility)
+                    androidx.compose.animation.AnimatedVisibility(
+                        visible = title.isEmpty() && !isFocused,
+                        enter = fadeIn(animationSpec = tween(durationMillis = 300, delayMillis = 100)), // Espera a que el pequeño se vaya
+                        exit = fadeOut(animationSpec = tween(durationMillis = 200)) // Se va rápido
+                    ) {
+                        Text(
+                            text = stringResource(R.string.title_task),
+                            color = Color.Gray,
+                            style = MaterialTheme.typography.bodyLarge,
+                            modifier = Modifier.padding(start = 16.dp) // Alineado con el cursor del TextField
+                        )
+                    }
+
+                    // 3. Label PEQUEÑO ARRIBA (Visible cuando hay FOCO o TEXTO)
+                    androidx.compose.animation.AnimatedVisibility(
+                        visible = isFocused || title.isNotEmpty(),
+                        enter = fadeIn(
+                            animationSpec = tween(
+                                durationMillis = 400,
+                                delayMillis = 150  // <--- AQUÍ ESTÁ EL DELAY que pedías
+                            )
+                        ),
+                        exit = fadeOut(animationSpec = tween(300)),
+                        modifier = Modifier.align(Alignment.TopStart) // Lo anclamos arriba
+                    ) {
+                        Text(
+                            text = stringResource(R.string.title_task),
+                            color = if (isFocused) MaterialTheme.colorScheme.primary else Color.Gray,
+                            fontSize = 12.sp,
+                            modifier = Modifier.padding(start = 16.dp, top = 0.dp)
+                        )
+                    }
+                }
+
+                // Error título
                 if (errors.containsKey("title")) {
+                    Spacer(modifier = Modifier.height(4.dp))
                     Text(
                         text = errors["title"] ?: "",
                         color = MaterialTheme.colorScheme.error,
                         style = MaterialTheme.typography.bodySmall,
-                        modifier = Modifier.padding(start = 16.dp, top = 2.dp)
+                        modifier = Modifier.padding(start = 8.dp)
                     )
                 }
+
+                Spacer(modifier = Modifier.height(12.dp)) // espacio entre campos
+
+                HorizontalDivider(
+                    color = Color.Gray,
+                    thickness = 1.dp,
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                // Campo contenido
                 TextField(
                     value = content,
                     onValueChange = { content = it },
-                    modifier = Modifier.fillMaxWidth()
-
+                    colors = TextFieldDefaults.colors(
+                        focusedContainerColor = Color.Transparent,
+                        unfocusedContainerColor = Color.Transparent,
+                        disabledContainerColor = Color.Transparent,
+                        focusedIndicatorColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent,
+                        disabledIndicatorColor = Color.Transparent,
+                    ),
+                    modifier =
+                        Modifier.fillMaxWidth()
+                            .heightIn(min = 200.dp)
                 )
-                Row(verticalAlignment = Alignment.CenterVertically) {
+
+                HorizontalDivider(
+                    color = Color.Gray,
+                    thickness = 1.dp,
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                // Checkbox completado
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(vertical = 4.dp)
+                ) {
                     Checkbox(
                         checked = completed,
                         onCheckedChange = { completed = it }
                     )
+                    Spacer(modifier = Modifier.width(8.dp))
                     Text(text = stringResource(R.string.completed))
                 }
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                // Selector de fecha
                 Text(
                     text = displayText,
                     modifier = Modifier
                         .fillMaxWidth()
                         .clickable { showDateDialog = true }
+                        .padding(vertical = 8.dp)
                 )
 
+                // Dialogo calendario
                 if (showDateDialog) {
                     CalendarDialog(
                         selectedDate = selectedDate,
@@ -118,8 +227,9 @@ fun TaskDialog(
                         onDismiss = { showDateDialog = false }
                     )
                 }
-            }
 
+                Spacer(modifier = Modifier.height(8.dp)) // espacio final para no quedar pegado al confirmButton
+            }
         },
 
         confirmButton = {

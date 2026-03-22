@@ -36,6 +36,7 @@ import com.afgalindob.todoapp.viewmodel.TaskViewModel
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.text.style.TextAlign
 import com.afgalindob.todoapp.data.mapper.TaskMapper.toFormState
 import com.afgalindob.todoapp.domain.TaskDomain
 import com.afgalindob.todoapp.viewmodel.TaskFilter
@@ -120,9 +121,23 @@ fun TaskListScreen(
                             )
                         }
                     }
+                    item {
+                        Spacer(Modifier.height(50.dp))
+                    }
+                    item {
+                        if (!tasks.isEmpty()) {
+                            Text(
+                                stringResource(R.string.end_of_tasks),
+                                color = textColor,
+                                modifier = Modifier
+                                    .padding(16.dp)
+                                    .fillMaxWidth(),
+                                textAlign = TextAlign.Center
+                            )
+                        }
+                    }
                 }
             }
-            Spacer(modifier = Modifier.height(16.dp))
 
             FloatingActionButton(
                 onClick = {

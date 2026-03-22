@@ -3,6 +3,7 @@
     <string name="app_name">ToDoApp</string>
     <string name="new_task_title">Nueva Tarea</string>
     <string name="task_list_placeholder">Aún no tienes tareas\\nToca el botón + para crear una</string>
+    <string name="end_of_tasks">No hay más tareas</string>
     <string name="delete_task_dialog">¿Desea eliminar esta tarea?</string>
     <string name="title_task">Titulo</string>
     <string name="description">Descripcion</string>
