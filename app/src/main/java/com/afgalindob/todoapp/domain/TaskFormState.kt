@@ -1,4 +1,4 @@
-package com.afgalindob.todoapp.schema
+package com.afgalindob.todoapp.domain
 
 data class TaskFormState(
     val title: String = "",

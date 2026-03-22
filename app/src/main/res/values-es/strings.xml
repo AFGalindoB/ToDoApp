@@ -27,4 +27,12 @@
     <string name="friday_day_picker">Vie</string>
     <string name="saturday_day_picker">Sab</string>
     <string name="sunday_day_picker">Dom</string>
+    <string name="section_today">Hoy</string>
+    <string name="section_tomorrow">Mañana</string>
+    <string name="section_this_week">Esta Semana</string>
+    <string name="section_next_week">Proxima Semana</string>
+    <string name="section_this_month">Este Mes</string>
+    <string name="section_no_date">Sin Fecha</string>
+    <string name="section_more">Mas</string>
+    <string name="section_overdue">Vencida</string>
 </resources>

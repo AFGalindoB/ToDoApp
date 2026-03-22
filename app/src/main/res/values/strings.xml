@@ -26,4 +26,12 @@
     <string name="friday_day_picker">Fr</string>
     <string name="saturday_day_picker">Sa</string>
     <string name="sunday_day_picker">Su</string>
+    <string name="section_today">Today</string>
+    <string name="section_tomorrow">Tomorrow</string>
+    <string name="section_this_week">This Week</string>
+    <string name="section_next_week">Next Week</string>
+    <string name="section_this_month">This Month</string>
+    <string name="section_no_date">No Date</string>
+    <string name="section_more">More</string>
+    <string name="section_overdue">Overdue</string>
 </resources>

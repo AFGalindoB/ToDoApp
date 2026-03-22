@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Spacer
 import com.afgalindob.todoapp.ui.components.TaskCard
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
@@ -33,10 +34,10 @@ import com.afgalindob.todoapp.ui.dialogs.DeleteTaskDialog
 import com.afgalindob.todoapp.ui.dialogs.TaskDialog
 import com.afgalindob.todoapp.viewmodel.TaskViewModel
 import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.Alignment
 import com.afgalindob.todoapp.data.mapper.TaskMapper.toFormState
-import com.afgalindob.todoapp.schema.TaskDomain
-import com.afgalindob.todoapp.schema.TaskFormState
+import com.afgalindob.todoapp.domain.TaskDomain
 import com.afgalindob.todoapp.viewmodel.TaskFilter
 
 enum class TypeTaskDialog(){
@@ -54,6 +55,7 @@ fun TaskListScreen(
     Surface(modifier = Modifier.fillMaxSize(), color = backgroundColor) {
 
         val tasks by viewModel.tasksDomain.collectAsState()
+        val tasksBySection by viewModel.tasksBySection.collectAsState()
 
         var dialogMode by remember { mutableStateOf<String?>(null) }
         var editingTask by remember { mutableStateOf<TaskDomain?>(null) }
@@ -89,32 +91,38 @@ fun TaskListScreen(
                     )
                 }
                 LazyColumn {
-                    items(tasks) {task ->
+                    tasksBySection.forEach { (section, tasks) ->
+                        // Header de la sección
+                        item {
+                            Text(
+                                text = stringResource(section),
+                                style = MaterialTheme.typography.titleMedium,
+                                color = textColor,
+                                modifier = Modifier.padding(8.dp)
+                            )
+                        }
 
-                        TaskCard(
-                            task = task,
-
-                            onToggleCompleted = { completed ->
-
-                                val updatedForm = task.toFormState().copy(completed = completed)
-                                viewModel.updateTask(task, updatedForm)
-                            },
-
-                            textColor = textColor,
-
-                            onEdit = {
-                                editingTask = task
-                                dialogMode = TypeTaskDialog.Edit.name
-                                taskErrors.clear()
-                            },
-
-                            onDelete = {
-                                deletingTask = task
-                            }
-                        )
+                        // Items de la sección
+                        items(tasks) { task ->
+                            TaskCard(
+                                task = task,
+                                onToggleCompleted = { completed ->
+                                    val updatedForm = task.toFormState().copy(completed = completed)
+                                    viewModel.updateTask(task, updatedForm)
+                                },
+                                textColor = textColor,
+                                onEdit = {
+                                    editingTask = task
+                                    dialogMode = TypeTaskDialog.Edit.name
+                                    taskErrors.clear()
+                                },
+                                onDelete = { deletingTask = task }
+                            )
+                        }
                     }
                 }
             }
+            Spacer(modifier = Modifier.height(16.dp))
 
             FloatingActionButton(
                 onClick = {
@@ -137,34 +145,19 @@ fun TaskListScreen(
                 task = if (dialogMode == TypeTaskDialog.Edit.name) editingTask else null,
                 errors = taskErrors,
                 colorText = textColor,
-                onConfirm = { values ->
+                onConfirm = { formState ->
 
                     // Validación
-                    val validationErrors = viewModel.validate(values)
+                    val validationErrors = viewModel.validate(formState)
                     taskErrors.clear()
                     taskErrors.putAll(validationErrors)
 
                     if (validationErrors.isEmpty()) {
-                        // Convertir Map<String,String> a TaskDomain parcial
-                        val taskForm = TaskFormState(
-                            title = values["title"] ?: "",
-                            content = values["content"] ?: "",
-                            date = values["date"]?.toLongOrNull(),
-                            completed = values["completed"] == "true"
-                        )
 
                         if (dialogMode == TypeTaskDialog.New.name) {
-                            // Para nueva tarea, TaskDomain se construye dentro del ViewModel
-                            viewModel.createTask(taskForm)
+                            viewModel.createTask(formState)
                         } else if (dialogMode == TypeTaskDialog.Edit.name && editingTask != null) {
-                            // Para edición, se mantiene el id de TaskDomain original
-                            val taskForm = TaskFormState(
-                                title = values["title"] ?: "",
-                                content = values["content"] ?: "",
-                                date = values["date"]?.toLongOrNull(),
-                                completed = values["completed"] == "true"
-                            )
-                            viewModel.updateTask(editingTask!!, taskForm)
+                            viewModel.updateTask(editingTask!!, formState)
                         }
 
                         // Cerrar diálogo

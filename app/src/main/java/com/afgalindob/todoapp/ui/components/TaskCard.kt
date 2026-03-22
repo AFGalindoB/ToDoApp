@@ -2,6 +2,8 @@ package com.afgalindob.todoapp.ui.components
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -33,7 +35,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.afgalindob.todoapp.R
-import com.afgalindob.todoapp.schema.TaskDomain
+import com.afgalindob.todoapp.domain.TaskDomain
 import com.afgalindob.todoapp.utils.DateUtils
 
 @Composable
@@ -47,10 +49,6 @@ fun TaskCard(
 
     var expanded by remember { mutableStateOf(false) }
 
-    val title = task.title
-    val content = task.content
-    val completed = task.completed
-
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -60,48 +58,59 @@ fun TaskCard(
 
         Column(modifier = Modifier.padding(16.dp)) {
 
-            Row(
-                verticalAlignment = Alignment.CenterVertically
-            ) {
+            // Header
+            Row(verticalAlignment = Alignment.CenterVertically) {
 
                 Checkbox(
-                    checked = completed,
-                    onCheckedChange = {
-                        onToggleCompleted(it)
-                    }
+                    checked = task.completed,
+                    onCheckedChange = { onToggleCompleted(it) }
                 )
 
-                Spacer(Modifier.width(8.dp))
+                Spacer(Modifier.width(5.dp))
 
-                Column(
-                    modifier = Modifier.weight(1f)
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .weight(1f)
+                        .clickable(
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = null
+                        ) { expanded = !expanded }
+                        .padding(8.dp) // respiración interna
                 ) {
+                    Column(
+                        modifier = Modifier.weight(1f),
+                    ) {
 
-                    Text(
-                        text = title,
-                        style = MaterialTheme.typography.titleMedium,
-                        color = textColor,
-                        maxLines = if (expanded) Int.MAX_VALUE else 1,
-                        overflow = if (expanded) TextOverflow.Clip else TextOverflow.Ellipsis
-                    )
-
-                    task.date?.let {
                         Text(
-                            text = DateUtils.formatReadable(DateUtils.fromTimestamp(it)),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = textColor
+                            text = task.title,
+                            style = MaterialTheme.typography.titleMedium,
+                            color = textColor,
+                            maxLines = if (expanded) Int.MAX_VALUE else 1,
+                            overflow = if (expanded) TextOverflow.Clip else TextOverflow.Ellipsis
                         )
-                    }
-                }
 
-                IconButton( onClick = {expanded = !expanded} ) {
+                        task.date?.let {
+                            Text(
+                                text = DateUtils.formatReadable(DateUtils.fromTimestamp(it)),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = textColor
+                            )
+                        }
+                    }
+
+                    Spacer(Modifier.width(5.dp))
+
                     Icon(
                         painter = painterResource(R.drawable.expand_more),
-                        contentDescription = "Expand"
+                        contentDescription = "Expand",
+                        modifier = Modifier.padding(5.dp)
                     )
+
                 }
             }
 
+            // Content
             AnimatedVisibility(expanded) {
 
                 Column {
@@ -110,7 +119,8 @@ fun TaskCard(
 
                     Row (modifier = Modifier.fillMaxWidth()){
                         Text(
-                            content, color = textColor,
+                            text = task.content,
+                            color = textColor,
                             modifier = Modifier.weight(1f).padding(end = 8.dp)
                         )
 

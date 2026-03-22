@@ -6,7 +6,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import com.afgalindob.todoapp.R
-import com.afgalindob.todoapp.schema.TaskDomain
+import com.afgalindob.todoapp.domain.TaskDomain
 
 @Composable
 fun DeleteTaskDialog(

@@ -2,13 +2,13 @@ package com.afgalindob.todoapp.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.afgalindob.todoapp.data.local.entity.TaskEntity
 import com.afgalindob.todoapp.data.mapper.TaskMapper.toDomain
 import com.afgalindob.todoapp.data.repository.TaskRepository
-import com.afgalindob.todoapp.schema.TaskDomain
-import com.afgalindob.todoapp.schema.TaskFormState
-import com.afgalindob.todoapp.schema.TaskSchema
-import com.afgalindob.todoapp.utils.DateUtils
+import com.afgalindob.todoapp.domain.TaskDomain
+import com.afgalindob.todoapp.domain.TaskFormState
+import com.afgalindob.todoapp.utils.getSection
+import com.afgalindob.todoapp.utils.sectionOrder
+import com.afgalindob.todoapp.utils.validateTaskForm
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.flatMapLatest
@@ -28,6 +28,7 @@ enum class TaskFilter {
 class TaskViewModel(private val repository: TaskRepository) : ViewModel() {
 
     private val filter = MutableStateFlow(TaskFilter.ALL)
+    private val crudHelpers = TaskCrudHelpers(repository)
 
     // Obtener las tareas de la base de datos y aplicar el filtro
     val tasks = filter.flatMapLatest { filterType ->
@@ -52,68 +53,37 @@ class TaskViewModel(private val repository: TaskRepository) : ViewModel() {
                 emptyList()
             )
 
+    val tasksBySection: StateFlow<Map<Int, List<TaskDomain>>> =
+        tasksDomain.map { list ->
+            list.groupBy { it.getSection() }
+                .toSortedMap(compareBy { sectionOrder(it) })
+        }.stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000),
+            emptyMap()
+        )
+
     fun setFilter(taskFilter: TaskFilter) {
         filter.value = taskFilter
     }
 
-    fun validate(values: Map<String, String>): Map<String, String> {
-
-        val errors = mutableMapOf<String, String>()
-
-        TaskSchema.fields.forEach { field ->
-
-            val value = values[field.key]
-
-            if (field.required && value.isNullOrBlank()) {
-                errors[field.key] = "Required field"
-            }
-
-            field.maxLenghtChar?.let{ max ->
-                if (value != null && value.length > max){
-                    errors[field.key] = "Max $max characters"
-                }
-            }
-
-        }
-
-        return errors
-    }
+    fun validate(form: TaskFormState) = validateTaskForm(form)
 
     fun createTask(form: TaskFormState) {
         viewModelScope.launch {
-            val now = DateUtils.now()
-
-            val task = TaskEntity(
-                title = form.title,
-                content = form.content,
-                date = form.date ?: 0L,
-                completed = form.completed,
-                createdAt = now,
-                updatedAt = now
-            )
-
-            repository.insertTask(task)
+            crudHelpers.createTask(form)
         }
     }
 
     fun deleteTask(task: TaskDomain) {
         viewModelScope.launch {
-            repository.deleteTaskById(task.id)
+            crudHelpers.deleteTask(task.id)
         }
     }
 
     fun updateTask(task: TaskDomain, form: TaskFormState) {
         viewModelScope.launch {
-            val data = TaskEntity(
-                id = task.id,
-                title = form.title,
-                content = form.content,
-                date = form.date ?: 0L,
-                completed = form.completed,
-                createdAt = task.createdAt,
-                updatedAt = DateUtils.now()
-            )
-                repository.updateTask(data)
+            crudHelpers.updateTask(task, form)
         }
     }
 }

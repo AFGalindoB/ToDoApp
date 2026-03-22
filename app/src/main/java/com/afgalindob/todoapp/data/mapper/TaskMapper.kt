@@ -1,8 +1,8 @@
 package com.afgalindob.todoapp.data.mapper
 
 import com.afgalindob.todoapp.data.local.entity.TaskEntity
-import com.afgalindob.todoapp.schema.TaskFormState
-import com.afgalindob.todoapp.schema.TaskDomain
+import com.afgalindob.todoapp.domain.TaskFormState
+import com.afgalindob.todoapp.domain.TaskDomain
 
 object TaskMapper {
 
