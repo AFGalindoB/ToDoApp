@@ -50,7 +50,7 @@ fun ToDoApp(
                 modifier = Modifier.padding(innerPadding)
         ) {
             composable(ToDoScreen.TaskList.name){
-                TaskListScreen(viewModel, textColor, backgroundColor)
+                TaskListScreen(viewModel)
             }
             composable(ToDoScreen.Account.name){
                 AccountScreen(textColor, backgroundColor)

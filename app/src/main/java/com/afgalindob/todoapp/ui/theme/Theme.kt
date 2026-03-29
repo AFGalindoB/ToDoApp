@@ -1,57 +1,42 @@
 package com.afgalindob.todoapp.ui.theme
 
-import android.os.Build
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.dynamicDarkColorScheme
-import androidx.compose.material3.dynamicLightColorScheme
-import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.platform.LocalContext
 
-private val DarkColorScheme = darkColorScheme(
-    primary = Purple80,
-    secondary = PurpleGrey80,
-    tertiary = Pink80
-)
+import androidx.compose.material3.ColorScheme
 
-private val LightColorScheme = lightColorScheme(
-    primary = Purple40,
-    secondary = PurpleGrey40,
-    tertiary = Pink40
+val DarkColorPalette: ColorScheme = darkColorScheme(
+    primary = AccentPrimary,
+    onPrimary = OnAccentPrimary,
+    secondary = AccentSecondary,
+    onSecondary = OnAccentSecondary,
 
-    /* Other default colors to override
-    background = Color(0xFFFFFBFE),
-    surface = Color(0xFFFFFBFE),
-    onPrimary = Color.White,
-    onSecondary = Color.White,
-    onTertiary = Color.White,
-    onBackground = Color(0xFF1C1B1F),
-    onSurface = Color(0xFF1C1B1F),
-    */
+    // Fondos y Superficies
+    background = BackgroundColor,
+    onBackground = OnSurfacePrimary,
+    surface = SurfaceContainer,
+    onSurface = OnSurfacePrimary,
+    surfaceVariant = SurfaceVariant, // Para el checkbox sin marcar y el icono de filtro
+    onSurfaceVariant = OnSurfaceSecondary, // Para el texto secundario
+
+    // Superficie elevada para contenedores
+    surfaceContainerHighest = SurfaceContainerHigh, // Para los 'chips' de la barra inferior
+
+    // Esto ayuda a que el check del checkbox se vea correcto
+    inversePrimary = AccentPrimary,
+
+    // Error
+    error = ErrorColor
 )
 
 @Composable
-fun ToDoAppTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
-    // Dynamic color is available on Android 12+
-    dynamicColor: Boolean = true,
+fun AssistantTheme(
     content: @Composable () -> Unit
 ) {
-    val colorScheme = when {
-        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-            val context = LocalContext.current
-            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-        }
-
-        darkTheme -> DarkColorScheme
-        else -> LightColorScheme
-    }
-
     MaterialTheme(
-        colorScheme = colorScheme,
-        typography = Typography,
+        colorScheme = DarkColorPalette,
+        typography = AppTypography,
         content = content
     )
 }

@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name" translatable="false">ToDoApp</string>
     <string name="new_task_title">New Task</string>
-    <string name="task_list_placeholder">You don\'t have any tasks yet\\nTap the + button to create one</string>
+    <string name="task_list_placeholder">You don\'t have any tasks yet\nTap the + button to create one</string>
     <string name="end_of_tasks">No more tasks</string>
     <string name="delete_task_dialog">Are you sure you want to delete this task?</string>
     <string name="title_task">Title</string>
@@ -18,6 +18,7 @@
     <string name="account_option">My Account</string>
     <string name="delete_option">Delete</string>
     <string name="show_completed_option">Show Completed</string>
+    <string name="no_date_option">No Date</string>
     <string name="monday_day_picker">Mo</string>
     <string name="tuesday_day_picker">Tu</string>
     <string name="wednesday_day_picker">We</string>
