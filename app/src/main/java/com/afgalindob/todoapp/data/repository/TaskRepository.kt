@@ -5,11 +5,7 @@ import kotlinx.coroutines.flow.Flow
 
 interface TaskRepository {
 
-    fun getAllTasksStream(): Flow<List<TaskEntity>>
-
-    fun getPendingTasks(): Flow<List<TaskEntity>>
-
-    fun getTasksByDate(): Flow<List<TaskEntity>>
+    fun getTasks(showCompleted: Boolean, today: Long): Flow<List<TaskEntity>>
 
     suspend fun insertTask(task: TaskEntity): Long
 

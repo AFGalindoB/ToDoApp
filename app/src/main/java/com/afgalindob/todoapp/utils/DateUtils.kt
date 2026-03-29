@@ -15,6 +15,11 @@ object DateUtils {
 
     fun now(): Long = System.currentTimeMillis()
 
+    fun today(): Long = LocalDate.now()
+        .atStartOfDay(ZoneId.systemDefault())
+        .toInstant()
+        .toEpochMilli()
+
     fun fromTimestamp(timestamp: Long): LocalDate =
         Instant.ofEpochMilli(timestamp)
             .atZone(ZoneId.systemDefault())
@@ -24,12 +29,13 @@ object DateUtils {
     fun formatISO(date: LocalDate): String =
         date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
 
-    // 🔹 Formato UI (el que tú quieres)
+    // 🔹 Formato UI
     fun formatReadable(date: LocalDate): String =
         date.format(
             DateTimeFormatter.ofPattern(
-                "dd MMMM yyyy",
+                "EEE - dd MMMM yyyy",
                 Locale.getDefault()
             )
-        )
+        ).capitalizeWords()
+
 }

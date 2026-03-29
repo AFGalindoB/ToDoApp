@@ -18,9 +18,7 @@
     <string name="tasks_option">Tareas</string>
     <string name="account_option">Mi Cuenta</string>
     <string name="delete_option">Eliminar</string>
-    <string name="filter_all">Todas</string>
-    <string name="filter_pending">Pendientes</string>
-    <string name="filter_by_date">Por Fecha</string>
+    <string name="show_completed_option">Mostrar Completadas</string>
     <string name="monday_day_picker">Lun</string>
     <string name="tuesday_day_picker">Mar</string>
     <string name="wednesday_day_picker">Mie</string>

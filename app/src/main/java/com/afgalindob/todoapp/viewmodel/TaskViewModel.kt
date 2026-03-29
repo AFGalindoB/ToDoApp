@@ -6,6 +6,7 @@ import com.afgalindob.todoapp.data.mapper.TaskMapper.toDomain
 import com.afgalindob.todoapp.data.repository.TaskRepository
 import com.afgalindob.todoapp.domain.TaskDomain
 import com.afgalindob.todoapp.domain.TaskFormState
+import com.afgalindob.todoapp.utils.DateUtils
 import com.afgalindob.todoapp.utils.getSection
 import com.afgalindob.todoapp.utils.sectionOrder
 import com.afgalindob.todoapp.utils.validateTaskForm
@@ -18,25 +19,16 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 
-enum class TaskFilter {
-    ALL,
-    PENDING,
-    BY_DATE
-}
-
 @OptIn(ExperimentalCoroutinesApi::class)
 class TaskViewModel(private val repository: TaskRepository) : ViewModel() {
 
-    private val filter = MutableStateFlow(TaskFilter.ALL)
+    private val showCompleted = MutableStateFlow(false)
+    val showCompletedState: StateFlow<Boolean> = showCompleted
     private val crudHelpers = TaskCrudHelpers(repository)
 
     // Obtener las tareas de la base de datos y aplicar el filtro
-    val tasks = filter.flatMapLatest { filterType ->
-        when (filterType) {
-            TaskFilter.ALL -> repository.getAllTasksStream()
-            TaskFilter.PENDING -> repository.getPendingTasks()
-            TaskFilter.BY_DATE -> repository.getTasksByDate()
-        }
+    val tasks = showCompleted.flatMapLatest { showCompleted ->
+        repository.getTasks(showCompleted, today = DateUtils.today())
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
@@ -63,8 +55,8 @@ class TaskViewModel(private val repository: TaskRepository) : ViewModel() {
             emptyMap()
         )
 
-    fun setFilter(taskFilter: TaskFilter) {
-        filter.value = taskFilter
+    fun toggleShowCompleted(showTaskCompleted: Boolean) {
+        showCompleted.value = showTaskCompleted
     }
 
     fun validate(form: TaskFormState) = validateTaskForm(form)

@@ -17,9 +17,7 @@
     <string name="tasks_option">Tasks</string>
     <string name="account_option">My Account</string>
     <string name="delete_option">Delete</string>
-    <string name="filter_all">All</string>
-    <string name="filter_pending">Pending</string>
-    <string name="filter_by_date">By Date</string>
+    <string name="show_completed_option">Show Completed</string>
     <string name="monday_day_picker">Mo</string>
     <string name="tuesday_day_picker">Tu</string>
     <string name="wednesday_day_picker">We</string>
