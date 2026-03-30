@@ -31,7 +31,8 @@ fun ToDoBottomBar(navController: NavHostController) {
         tonalElevation = 8.dp
     ) {
         val items = listOf(
-            Triple(ToDoScreen.TaskList.name, R.drawable.task_list, R.string.tasks_option),
+            Triple(ToDoScreen.TaskList.name, R.drawable.task_list, R.string.tasks),
+            Triple(ToDoScreen.NoteList.name, R.drawable.notes, R.string.notes),
             Triple(ToDoScreen.Account.name, R.drawable.account, R.string.account_option)
         )
         items.forEach { (route, iconRes, labelRes) ->

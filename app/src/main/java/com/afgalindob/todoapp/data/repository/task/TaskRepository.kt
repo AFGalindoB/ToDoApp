@@ -1,4 +1,4 @@
-package com.afgalindob.todoapp.data.repository
+package com.afgalindob.todoapp.data.repository.task
 
 import com.afgalindob.todoapp.data.local.entity.TaskEntity
 import kotlinx.coroutines.flow.Flow

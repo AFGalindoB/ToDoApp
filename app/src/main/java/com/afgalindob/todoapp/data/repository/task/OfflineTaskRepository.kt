@@ -1,4 +1,4 @@
-package com.afgalindob.todoapp.data.repository
+package com.afgalindob.todoapp.data.repository.task
 
 import com.afgalindob.todoapp.data.local.dao.TaskDao
 import com.afgalindob.todoapp.data.local.entity.TaskEntity
@@ -12,12 +12,12 @@ class OfflineTaskRepository(
         taskDao.getTasks(showCompleted, today)
 
     override suspend fun insertTask(task: TaskEntity) =
-        taskDao.insert(task)
+        taskDao.insertTask(task)
 
     override suspend fun deleteTaskById(id: Long) =
         taskDao.deleteTaskById(id)
 
     override suspend fun updateTask(task: TaskEntity) =
-        taskDao.update(task)
+        taskDao.updateTask(task)
 
 }

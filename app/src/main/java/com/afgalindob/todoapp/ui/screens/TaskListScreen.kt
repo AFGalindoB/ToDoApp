@@ -26,8 +26,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.afgalindob.todoapp.R
-import com.afgalindob.todoapp.ui.dialogs.DeleteTaskDialog
-import com.afgalindob.todoapp.ui.dialogs.TaskDialog
+import com.afgalindob.todoapp.ui.dialogs.DeleteEntityDialog
+import com.afgalindob.todoapp.ui.dialogs.TaskUpserDialog
 import com.afgalindob.todoapp.viewmodel.TaskViewModel
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
@@ -37,6 +37,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.text.style.TextAlign
 import com.afgalindob.todoapp.data.mapper.TaskMapper.toFormState
 import com.afgalindob.todoapp.domain.TaskDomain
+import com.afgalindob.todoapp.domain.validation.ValidationError
+import com.afgalindob.todoapp.navigation.DialogType
+import com.afgalindob.todoapp.navigation.FormMode
 import com.afgalindob.todoapp.ui.dialogs.FilterBottomSheet
 import com.afgalindob.todoapp.ui.theme.AccentPrimary
 import com.afgalindob.todoapp.ui.theme.BackgroundColor
@@ -45,13 +48,9 @@ import com.afgalindob.todoapp.ui.theme.OnSurfacePrimary
 import com.afgalindob.todoapp.ui.theme.OnSurfaceSecondary
 import com.afgalindob.todoapp.ui.theme.SurfaceVariant
 
-enum class TypeTaskDialog(){
-    New,
-    Edit
-}
 
 @Composable
-fun TaskListScreen(viewModel: TaskViewModel, ){
+fun TaskListScreen(viewModel: TaskViewModel){
 
     Surface(modifier = Modifier.fillMaxSize(), color = BackgroundColor) {
 
@@ -64,18 +63,19 @@ fun TaskListScreen(viewModel: TaskViewModel, ){
         var dialogMode by remember { mutableStateOf<String?>(null) }
         var editingTask by remember { mutableStateOf<TaskDomain?>(null) }
         var deletingTask by remember { mutableStateOf<TaskDomain?>(null) }
-        val taskErrors = remember { mutableStateMapOf<String,String>() }
+        val taskErrors = remember { mutableStateMapOf<String, ValidationError>() }
         var filterDialog by remember { mutableStateOf(false) }
 
         Box(modifier = Modifier.fillMaxSize()){
             Column {
+                // Boton Filtro
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(8.dp), // opcional
+                        .padding(8.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Spacer(modifier = Modifier.weight(1f)) // empuja el botón a la derecha
+                    Spacer(modifier = Modifier.weight(1f))
                     IconButton(onClick = { filterDialog = true }) {
                         Icon(
                             painter = painterResource(R.drawable.filter),
@@ -87,7 +87,7 @@ fun TaskListScreen(viewModel: TaskViewModel, ){
 
                 if (tasks.isEmpty()){
                     Text(
-                        stringResource(R.string.task_list_placeholder),
+                        stringResource(R.string.list_placeholder, stringResource(R.string.tasks).lowercase()),
                         style = MaterialTheme.typography.displayLarge,
                         modifier = Modifier
                             .padding(16.dp)
@@ -142,20 +142,18 @@ fun TaskListScreen(viewModel: TaskViewModel, ){
                                 },
                                 onEdit = {
                                     editingTask = task
-                                    dialogMode = TypeTaskDialog.Edit.name
+                                    dialogMode = FormMode.Edit.name
                                     taskErrors.clear()
                                 },
                                 onDelete = { deletingTask = task }
                             )
                         }
                     }
-                    item {
-                        Spacer(Modifier.height(50.dp))
-                    }
+                    item { Spacer(Modifier.height(50.dp)) }
                     item {
                         if (!tasks.isEmpty()) {
                             Text(
-                                stringResource(R.string.end_of_tasks),
+                                stringResource(R.string.end_of_list) + " " + stringResource(R.string.tasks),
                                 style = MaterialTheme.typography.bodyMedium,
                                 modifier = Modifier
                                     .padding(16.dp)
@@ -170,7 +168,7 @@ fun TaskListScreen(viewModel: TaskViewModel, ){
             FloatingActionButton(
                 onClick = {
                     editingTask = null
-                    dialogMode = TypeTaskDialog.New.name
+                    dialogMode = FormMode.New.name
                     taskErrors.clear()
                 },
                 containerColor = AccentPrimary,
@@ -178,7 +176,8 @@ fun TaskListScreen(viewModel: TaskViewModel, ){
                     .align(Alignment.BottomEnd)
                     .padding(16.dp)
             ) {
-                Icon(painter = painterResource(R.drawable.add),
+                Icon(
+                    painter = painterResource(R.drawable.add),
                     contentDescription = "Add Task",
                     tint = OnAccentPrimary
                 )
@@ -186,9 +185,9 @@ fun TaskListScreen(viewModel: TaskViewModel, ){
 
         }
 
-        if (dialogMode != null) {
-            TaskDialog(
-                task = if (dialogMode == TypeTaskDialog.Edit.name) editingTask else null,
+        dialogMode?.let{
+            TaskUpserDialog(
+                task = if (dialogMode == FormMode.Edit.name) editingTask else null,
                 errors = taskErrors,
                 onConfirm = { formState ->
 
@@ -199,9 +198,9 @@ fun TaskListScreen(viewModel: TaskViewModel, ){
 
                     if (validationErrors.isEmpty()) {
 
-                        if (dialogMode == TypeTaskDialog.New.name) {
+                        if (dialogMode == FormMode.New.name) {
                             viewModel.createTask(formState)
-                        } else if (dialogMode == TypeTaskDialog.Edit.name && editingTask != null) {
+                        } else if (dialogMode == FormMode.Edit.name && editingTask != null) {
                             viewModel.updateTask(editingTask!!, formState)
                         }
 
@@ -218,8 +217,10 @@ fun TaskListScreen(viewModel: TaskViewModel, ){
         }
 
         deletingTask?.let { task ->
-            DeleteTaskDialog(
-                task = task,
+            DeleteEntityDialog(
+                title = task.title,
+
+                type = DialogType.TASK,
 
                 onConfirm = {
                     viewModel.deleteTask(task)

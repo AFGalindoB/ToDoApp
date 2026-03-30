@@ -18,7 +18,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.afgalindob.todoapp.R
-import com.afgalindob.todoapp.domain.TaskDomain
+import com.afgalindob.todoapp.navigation.DialogType
 import com.afgalindob.todoapp.ui.theme.AccentSecondary
 import com.afgalindob.todoapp.ui.theme.OnAccentSecondary
 import com.afgalindob.todoapp.ui.theme.OnSurfacePrimary
@@ -27,21 +27,24 @@ import com.afgalindob.todoapp.ui.theme.SurfaceContainer
 import com.afgalindob.todoapp.ui.theme.SurfaceVariant
 
 @Composable
-fun DeleteTaskDialog(
-    task: TaskDomain,
+fun DeleteEntityDialog(
+    title: String,
+    type: DialogType,
     onConfirm: () -> Unit,
     onDismiss: () -> Unit
 ) {
 
-    val title = task.title
-
+    val typeEntity: Int = when (type) {
+        DialogType.TASK -> R.string.task
+        DialogType.NOTE -> R.string.note
+    }
     AlertDialog(
         onDismissRequest = onDismiss,
 
         containerColor = SurfaceContainer,
 
         title = { Text(
-            stringResource(R.string.delete_task),
+            stringResource(R.string.delete) + " " +  stringResource(typeEntity),
             style = MaterialTheme.typography.displayLarge,
             modifier = Modifier.fillMaxWidth(),
             textAlign = TextAlign.Center
@@ -51,7 +54,7 @@ fun DeleteTaskDialog(
         text = {
             Column {
                 Text(
-                    stringResource(R.string.delete_task_dialog),
+                    stringResource(R.string.delete_dialog, stringResource(typeEntity).lowercase()),
                     style = MaterialTheme.typography.bodyLarge,
                     color = OnSurfaceSecondary,
                     modifier = Modifier.fillMaxWidth(),
@@ -113,7 +116,7 @@ fun DeleteTaskDialog(
                     modifier = Modifier.weight(1f).padding(start = 8.dp)
                 ) {
                     Text(
-                        stringResource(R.string.delete_option),
+                        stringResource(R.string.delete),
                         style = MaterialTheme.typography.bodyMedium,
                         textAlign = TextAlign.Center
                     )

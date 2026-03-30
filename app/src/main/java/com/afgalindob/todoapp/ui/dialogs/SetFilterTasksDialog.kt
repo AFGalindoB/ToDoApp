@@ -60,7 +60,7 @@ fun FilterBottomSheet(
                 )
                 Spacer(Modifier.width(5.dp))
                 Text(
-                    text = stringResource(R.string.show_completed_option),
+                    text = stringResource(R.string.show) + " " + stringResource(R.string.completed),
                     style = MaterialTheme.typography.bodyLarge
                 )
             }

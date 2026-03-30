@@ -5,20 +5,24 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.afgalindob.todoapp.data.local.entity.TaskEntity
+import com.afgalindob.todoapp.data.local.entity.NoteEntity
 import com.afgalindob.todoapp.data.local.dao.TaskDao
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
+import com.afgalindob.todoapp.data.local.dao.NoteDao
 import org.json.JSONObject
 import java.text.SimpleDateFormat
 import java.util.Locale
 
 @Database(
-    entities = [TaskEntity::class],
-    version = 3,
+    entities = [TaskEntity::class, NoteEntity::class],
+    version = 4,
     exportSchema = true
 )
 abstract class AppDatabase : RoomDatabase() {
     abstract fun taskDao(): TaskDao
+    abstract fun noteDao(): NoteDao
+
     companion object {
         @Volatile
         private var Instance: AppDatabase? = null
@@ -31,7 +35,7 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     "todo_database"
                 )
-                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
+                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
                     .build()
                     .also { Instance = it }
             }
@@ -103,7 +107,7 @@ val MIGRATION_1_2 = object : Migration(1, 2) {
     }
 }
 
-val MIGRATION_2_3 = object : Migration(2,3){
+val MIGRATION_2_3 = object : Migration(2, 3){
 
     private fun parseDateToTimestamp(date: String?): Long {
         if (date.isNullOrEmpty()) return 0L
@@ -169,5 +173,21 @@ val MIGRATION_2_3 = object : Migration(2,3){
 
         db.execSQL("CREATE INDEX IF NOT EXISTS index_tasks_date ON tasks(date)")
         db.execSQL("CREATE INDEX IF NOT EXISTS index_tasks_completed ON tasks(completed)")
+    }
+}
+
+val MIGRATION_3_4 = object : Migration(3, 4) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL(
+            """
+                CREATE TABLE IF NOT EXISTS `notes` (
+                `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, 
+                `title` TEXT NOT NULL, 
+                `content` TEXT NOT NULL,
+                `createdAt` INTEGER NOT NULL,
+                `updatedAt` INTEGER NOT NULL
+                )
+            """
+        )
     }
 }

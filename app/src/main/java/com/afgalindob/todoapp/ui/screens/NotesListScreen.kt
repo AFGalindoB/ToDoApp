@@ -1,0 +1,160 @@
+package com.afgalindob.todoapp.ui.screens
+
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import com.afgalindob.todoapp.R
+import com.afgalindob.todoapp.domain.NoteDomain
+import com.afgalindob.todoapp.domain.validation.ValidationError
+import com.afgalindob.todoapp.navigation.DialogType
+import com.afgalindob.todoapp.navigation.FormMode
+import com.afgalindob.todoapp.ui.components.NoteCard
+import com.afgalindob.todoapp.ui.dialogs.DeleteEntityDialog
+import com.afgalindob.todoapp.ui.dialogs.NoteUpserDialog
+import com.afgalindob.todoapp.ui.theme.AccentPrimary
+import com.afgalindob.todoapp.ui.theme.BackgroundColor
+import com.afgalindob.todoapp.ui.theme.OnAccentPrimary
+import com.afgalindob.todoapp.viewmodel.NoteViewModel
+
+@Composable
+fun NotesListScreen(viewModel: NoteViewModel){
+    Surface(modifier = Modifier.fillMaxSize(), color = BackgroundColor) {
+        val notes by viewModel.notesDomain.collectAsState()
+
+        var expandedNoteId by remember { mutableStateOf<Long?>(null) }
+
+        var dialogMode by remember { mutableStateOf<String?>(null) }
+        var editingNote by remember { mutableStateOf<NoteDomain?>(null) }
+        val noteErrors = remember { mutableStateMapOf<String, ValidationError>() }
+        var deletingNote by remember { mutableStateOf<NoteDomain?>(null) }
+
+        Box(modifier = Modifier.fillMaxSize()){
+            LazyColumn {
+                if (notes.isEmpty()) {
+                    item {
+                        Text(
+                            stringResource(
+                                R.string.list_placeholder,
+                                stringResource(R.string.notes).lowercase()
+                            ),
+                            style = MaterialTheme.typography.displayLarge,
+                            modifier = Modifier
+                                .padding(16.dp)
+                                .fillMaxWidth(),
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                }
+                items(
+                    items = notes,
+                    key = { it.id }
+                ) { note ->
+                    NoteCard(
+                        note = note,
+                        expanded = expandedNoteId == note.id,
+                        anyCardExpanded = expandedNoteId != null,
+                        onExpand = { expandedNoteId = if (expandedNoteId == note.id) null else note.id },
+                        onEdit = {
+                            editingNote = note
+                            dialogMode = FormMode.Edit.name
+                            noteErrors.clear()
+                        },
+                        onDelete = { deletingNote = note }
+                    )
+                }
+                if (!notes.isEmpty()) {
+                    item { Spacer(Modifier.height(50.dp)) }
+                    item {
+                        Text(
+                            stringResource(R.string.end_of_list) + " " + stringResource(R.string.notes),
+                            style = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier
+                                .padding(16.dp)
+                                .fillMaxWidth(),
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                }
+            }
+            FloatingActionButton(
+                onClick = {
+                    editingNote = null
+                    dialogMode = FormMode.New.name
+                    noteErrors.clear()
+                },
+                containerColor = AccentPrimary,
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(16.dp)
+            ) {
+                Icon(
+                    painter = painterResource(R.drawable.add),
+                    contentDescription = "Add Note",
+                    tint = OnAccentPrimary
+                )
+            }
+        }
+        dialogMode?.let{
+            NoteUpserDialog(
+                note = if (dialogMode == FormMode.Edit.name) editingNote else null,
+                errors = noteErrors,
+                onConfirm = {
+                    val validationErrors = viewModel.validate(it)
+                    noteErrors.clear()
+                    noteErrors.putAll(validationErrors)
+
+                    if (validationErrors.isEmpty()) {
+                        if (dialogMode == FormMode.New.name) {
+                            viewModel.createNote(it)
+                        } else if (dialogMode == FormMode.Edit.name && editingNote != null) {
+                            viewModel.updateNote(editingNote!!, it)
+                        }
+                        dialogMode = null
+                        editingNote = null
+                    }
+                },
+                onDismiss = {
+                    dialogMode = null
+                    editingNote = null
+                }
+            )
+        }
+        deletingNote?.let {
+            DeleteEntityDialog(
+                title = it.title,
+                type = DialogType.NOTE,
+                onConfirm = {
+                    viewModel.deleteNote(it)
+                    deletingNote = null
+                },
+                onDismiss = {
+                    deletingNote = null
+                }
+            )
+
+        }
+    }
+}

@@ -9,14 +9,14 @@ import java.time.ZoneId
 import java.time.temporal.TemporalAdjusters
 
 object TaskSections {
-    val OVERDUE = R.string.section_overdue
-    val TODAY = R.string.section_today
-    val TOMORROW = R.string.section_tomorrow
-    val THIS_WEEK = R.string.section_this_week
-    val NEXT_WEEK = R.string.section_next_week
-    val THIS_MONTH = R.string.section_this_month
-    val NO_DATE = R.string.section_no_date
-    val MORE = R.string.section_more
+    val OVERDUE = R.string.overdue
+    val TODAY = R.string.today
+    val TOMORROW = R.string.tomorrow
+    val THIS_WEEK = R.string.this_week
+    val NEXT_WEEK = R.string.next_week
+    val THIS_MONTH = R.string.this_month
+    val NO_DATE = R.string.no_date
+    val MORE = R.string.more
 }
 
 fun TaskDomain.getSection(): Int {

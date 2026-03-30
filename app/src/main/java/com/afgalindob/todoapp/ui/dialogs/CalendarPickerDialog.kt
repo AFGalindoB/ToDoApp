@@ -71,13 +71,13 @@ fun CalendarDialog(
         }
 
         val days = listOf(
-            R.string.monday_day_picker,
-            R.string.tuesday_day_picker,
-            R.string.wednesday_day_picker,
-            R.string.thursday_day_picker,
-            R.string.friday_day_picker,
-            R.string.saturday_day_picker,
-            R.string.sunday_day_picker
+            R.string.monday,
+            R.string.tuesday,
+            R.string.wednesday,
+            R.string.thursday,
+            R.string.friday,
+            R.string.saturday,
+            R.string.sunday
         )
 
         Card(
@@ -188,7 +188,7 @@ fun CalendarDialog(
                         )
                         Spacer(Modifier.width(8.dp))
                         Text(
-                            text = stringResource(R.string.no_date_option),
+                            text = stringResource(R.string.no_date),
                             color = AccentPrimary,
                             style = MaterialTheme.typography.labelLarge
                         )

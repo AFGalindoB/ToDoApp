@@ -4,23 +4,22 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.runtime.remember
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.afgalindob.todoapp.data.local.db.AppDatabase
-import com.afgalindob.todoapp.data.repository.OfflineTaskRepository
 import com.afgalindob.todoapp.ui.screens.TaskListScreen
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.afgalindob.todoapp.navigation.ToDoBottomBar
 import com.afgalindob.todoapp.ui.screens.AccountScreen
+import com.afgalindob.todoapp.ui.screens.NotesListScreen
+import com.afgalindob.todoapp.viewmodel.NoteViewModel
 import com.afgalindob.todoapp.viewmodel.TaskViewModel
 
 enum class ToDoScreen() {
     TaskList,
+    NoteList,
     Account
 }
 
@@ -29,18 +28,15 @@ fun ToDoApp(
     navController: NavHostController = rememberNavController()
 ) {
     val context = LocalContext.current
+    val container = (context.applicationContext as TodoApplication).container
 
-    val repository = remember {
-        OfflineTaskRepository(
-            AppDatabase.getDatabase(context).taskDao()
-        )
+    val taskViewModel: TaskViewModel = viewModel {
+        TaskViewModel(container.taskRepository)
     }
 
-    val viewModel: TaskViewModel = viewModel {
-        TaskViewModel(repository)
+    val noteViewModel: NoteViewModel = viewModel {
+        NoteViewModel(container.noteRepository)
     }
-    val textColor: Color = Color.White
-    val backgroundColor: Color = Color.Black
 
     Scaffold (
         bottomBar = { ToDoBottomBar(navController) }
@@ -50,10 +46,13 @@ fun ToDoApp(
                 modifier = Modifier.padding(innerPadding)
         ) {
             composable(ToDoScreen.TaskList.name){
-                TaskListScreen(viewModel)
+                TaskListScreen(taskViewModel)
             }
             composable(ToDoScreen.Account.name){
-                AccountScreen(textColor, backgroundColor)
+                AccountScreen()
+            }
+            composable(ToDoScreen.NoteList.name) {
+                NotesListScreen(noteViewModel)
             }
         }
     }

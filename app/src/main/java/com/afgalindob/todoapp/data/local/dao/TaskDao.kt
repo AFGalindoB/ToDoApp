@@ -21,12 +21,12 @@ interface TaskDao {
     fun getTasks(showCompleted: Boolean, today: Long): Flow<List<TaskEntity>>
 
     @Insert(onConflict = OnConflictStrategy.Companion.IGNORE)
-    suspend fun insert(task: TaskEntity): Long
+    suspend fun insertTask(task: TaskEntity): Long
 
     @Query("DELETE FROM tasks WHERE id = :id")
     suspend fun deleteTaskById(id: Long)
 
     @Update
-    suspend fun update(task: TaskEntity)
+    suspend fun updateTask(task: TaskEntity)
 
 }
