@@ -1,7 +1,6 @@
 package com.afgalindob.todoapp.ui.screens
 
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -17,6 +16,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
@@ -41,7 +41,6 @@ import com.afgalindob.todoapp.ui.theme.AccentPrimary
 import com.afgalindob.todoapp.ui.theme.BackgroundColor
 import com.afgalindob.todoapp.ui.theme.OnAccentPrimary
 import com.afgalindob.todoapp.viewmodel.NoteViewModel
-import kotlinx.coroutines.delay
 
 @Composable
 fun NotesListScreen(
@@ -64,6 +63,20 @@ fun NotesListScreen(
         val noteErrors = remember { mutableStateMapOf<String, ValidationError>() }
         var deletingNote by remember { mutableStateOf<NoteDomain?>(null) }
 
+        val onExpandAction = remember {
+            { id: Long -> expandedNoteId = if (expandedNoteId == id) null else id }
+        }
+
+        val isAnyExpanded by remember { derivedStateOf { expandedNoteId != null } }
+
+        val onEditAction = remember {
+            { note: NoteDomain ->
+                editingNote = note
+                dialogMode = FormMode.Edit.name
+                noteErrors.clear()
+            }
+        }
+
         Box(modifier = Modifier.fillMaxSize()){
             LazyColumn {
                 if (notes.isEmpty()) {
@@ -85,16 +98,13 @@ fun NotesListScreen(
                     items = notes,
                     key = { it.id }
                 ) { note ->
+                    val isExpanded = expandedNoteId == note.id
                     NoteCard(
                         note = note,
-                        expanded = expandedNoteId == note.id,
-                        anyCardExpanded = expandedNoteId != null,
-                        onExpand = { expandedNoteId = if (expandedNoteId == note.id) null else note.id },
-                        onEdit = {
-                            editingNote = note
-                            dialogMode = FormMode.Edit.name
-                            noteErrors.clear()
-                        },
+                        expanded = isExpanded,
+                        anyCardExpanded = isAnyExpanded,
+                        onExpand = { onExpandAction(note.id) },
+                        onEdit = { onEditAction(note) },
                         onDelete = { deletingNote = note }
                     )
                 }

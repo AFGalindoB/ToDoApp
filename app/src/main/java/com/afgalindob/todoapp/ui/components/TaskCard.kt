@@ -8,7 +8,6 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -16,7 +15,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -42,7 +40,6 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.afgalindob.todoapp.R
 import com.afgalindob.todoapp.domain.TaskDomain
@@ -53,7 +50,6 @@ import com.afgalindob.todoapp.ui.theme.OnSurfaceSecondary
 import com.afgalindob.todoapp.ui.theme.SurfaceContainer
 import com.afgalindob.todoapp.ui.theme.SurfaceVariant
 import com.afgalindob.todoapp.utils.DateUtils
-import kotlin.math.roundToInt
 
 @Composable
 fun TaskCard(
@@ -67,10 +63,6 @@ fun TaskCard(
 ) {
 
     var offsetX by remember { mutableFloatStateOf(0f) }
-    val animatedOffsetX by animateFloatAsState(
-        targetValue = offsetX,
-        animationSpec = tween(durationMillis = 100)
-    )
 
     val borderWidth by animateDpAsState(
         targetValue = if (expanded) 2.dp else 0.dp,
@@ -110,11 +102,11 @@ fun TaskCard(
             .graphicsLayer(
                 scaleX = scale,
                 scaleY = scale,
+                alpha = alpha,
+                translationX = offsetX,
                 transformOrigin = TransformOrigin.Center,
-                alpha = alpha
-
+                clip = true
             )
-            .offset { IntOffset(animatedOffsetX.roundToInt(), 0) }
             .pointerInput(Unit) {
                 detectHorizontalDragGestures(
                     onDragEnd = {
@@ -124,8 +116,7 @@ fun TaskCard(
                         offsetX = 0f // regresamos a la posición inicial
                     },
                     onHorizontalDrag = { _, dragAmount ->
-                        offsetX += dragAmount
-                        if (offsetX < 0f) offsetX = 0f // no permitir deslizar hacia la izquierda
+                        offsetX = (offsetX + dragAmount).coerceAtLeast(0f)
                     }
                 )
             }
@@ -136,9 +127,7 @@ fun TaskCard(
                 .padding(8.dp),
             shape = RoundedCornerShape(20.dp),
             border = if (expanded) BorderStroke(borderWidth, AccentPrimary) else null,
-            colors = CardDefaults.cardColors(
-                containerColor = SurfaceContainer,
-            ),
+            colors = CardDefaults.cardColors( containerColor = SurfaceContainer),
             elevation = CardDefaults.cardElevation(
                 defaultElevation = if (expanded) 8.dp else 2.dp
             )
@@ -159,19 +148,18 @@ fun TaskCard(
 
                     Spacer(Modifier.width(5.dp))
 
+                    // titulo y expandir
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier
                             .weight(1f)
                             .clickable(
-                                interactionSource = remember { MutableInteractionSource() },
-                                indication = null
+                                indication = null,
+                                interactionSource = null
                             ) { onExpand() }
-                            .padding(8.dp) // respiración interna
+                            .padding(8.dp)
                     ) {
-                        Column(
-                            modifier = Modifier.weight(1f),
-                        ) {
+                        Column(modifier = Modifier.weight(1f)) {
 
                             Text(
                                 text = task.title,
@@ -208,14 +196,11 @@ fun TaskCard(
                     Column {
                         Spacer(Modifier.height(10.dp))
 
-                        // Usamos un Box para que el botón y el texto convivan en el mismo espacio
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                // Esto obliga a que este bloque SIEMPRE mida 120.dp de alto como mínimo
                                 .heightIn(min = 120.dp)
                         ) {
-                            // El Texto ocupa todo el ancho menos un margen para que no choque con el botón
                             Text(
                                 text = task.content,
                                 style = MaterialTheme.typography.bodyLarge,
@@ -224,7 +209,6 @@ fun TaskCard(
                                     .padding(end = 48.dp) // Espacio reservado para que el texto no pase por debajo del botón
                             )
 
-                            // El Botón se posiciona absolutamente arriba a la derecha del Box
                             IconButton(
                                 onClick = onEdit,
                                 modifier = Modifier

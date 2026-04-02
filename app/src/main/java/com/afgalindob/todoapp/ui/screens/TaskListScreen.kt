@@ -2,7 +2,6 @@ package com.afgalindob.todoapp.ui.screens
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import com.afgalindob.todoapp.ui.components.TaskCard
@@ -31,27 +30,24 @@ import com.afgalindob.todoapp.ui.dialogs.DeleteEntityDialog
 import com.afgalindob.todoapp.ui.dialogs.TaskUpserDialog
 import com.afgalindob.todoapp.viewmodel.TaskViewModel
 import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.text.style.TextAlign
-import com.afgalindob.todoapp.data.mapper.TaskMapper.toFormState
 import com.afgalindob.todoapp.domain.TaskDomain
 import com.afgalindob.todoapp.domain.validation.ValidationError
 import com.afgalindob.todoapp.navigation.DialogType
 import com.afgalindob.todoapp.navigation.FormMode
+import com.afgalindob.todoapp.ui.components.SectionHeader
 import com.afgalindob.todoapp.ui.dialogs.FilterBottomSheet
 import com.afgalindob.todoapp.ui.theme.AccentPrimary
 import com.afgalindob.todoapp.ui.theme.BackgroundColor
 import com.afgalindob.todoapp.ui.theme.OnAccentPrimary
 import com.afgalindob.todoapp.ui.theme.OnSurfacePrimary
-import com.afgalindob.todoapp.ui.theme.OnSurfaceSecondary
-import com.afgalindob.todoapp.ui.theme.SurfaceVariant
-
 
 @Composable
 fun TaskListScreen(
@@ -97,6 +93,23 @@ fun TaskListScreen(
         var deletingTask by remember { mutableStateOf<TaskDomain?>(null) }
         val taskErrors = remember { mutableStateMapOf<String, ValidationError>() }
 
+        val onToggle = remember(viewModel) {
+            { task: TaskDomain, completed: Boolean -> viewModel.toggleTaskCompleted(task, completed) }
+        }
+        val onEditAction = remember {
+            { task: TaskDomain ->
+                editingTask = task
+                dialogMode = FormMode.Edit.name
+                taskErrors.clear()
+            }
+        }
+
+        val isAnyExpanded by remember { derivedStateOf { expandedTaskId != null } }
+
+        val onExpandAction = remember {
+            { id: Long -> expandedTaskId = if (expandedTaskId == id) null else id }
+        }
+
         Box(modifier = Modifier.fillMaxSize()){
             Column {
                 if (tasks.isEmpty()){
@@ -113,52 +126,23 @@ fun TaskListScreen(
                 LazyColumn {
                     tasksBySection.forEach { (section, tasks) ->
                         // Header de la sección
-                        item {
-                            Row (
-                                modifier = Modifier.fillMaxWidth(),
-                                verticalAlignment = Alignment.CenterVertically
-                            ){
-
-                                HorizontalDivider(
-                                    color = SurfaceVariant,
-                                    thickness = 1.dp,
-                                    modifier = Modifier.weight(1f).padding(horizontal = 8.dp)
-                                )
-
-                                Text(
-                                    text = stringResource(section),
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    color = OnSurfaceSecondary,
-                                    textAlign = TextAlign.Center,
-                                    modifier = Modifier.padding(8.dp)
-                                )
-
-                                HorizontalDivider(
-                                    color = SurfaceVariant,
-                                    thickness = 1.dp,
-                                    modifier = Modifier.weight(1f).padding(horizontal = 8.dp)
-                                )
-                            }
+                        item(key = "section_$section", contentType = "header") {
+                            SectionHeader(section)
                         }
 
                         // Items de la sección
-                        items(tasks) { task ->
+                        items(
+                            items = tasks,
+                            key = { it.id }
+                        ) { task ->
+                            val isExpanded = expandedTaskId == task.id
                             TaskCard(
                                 task = task,
-                                expanded = expandedTaskId == task.id, // solo la abierta se expande
-                                onExpand = {
-                                    expandedTaskId = if (expandedTaskId == task.id) null else task.id
-                                },
-                                anyCardExpanded = expandedTaskId != null,
-                                onToggleCompleted = { completed ->
-                                    val updatedForm = task.toFormState().copy(completed = completed)
-                                    viewModel.updateTask(task, updatedForm)
-                                },
-                                onEdit = {
-                                    editingTask = task
-                                    dialogMode = FormMode.Edit.name
-                                    taskErrors.clear()
-                                },
+                                expanded = isExpanded,
+                                onExpand = { onExpandAction(task.id) },
+                                anyCardExpanded = isAnyExpanded,
+                                onToggleCompleted = { completed -> onToggle(task, completed) },
+                                onEdit = { onEditAction(task) },
                                 onDelete = { deletingTask = task }
                             )
                         }

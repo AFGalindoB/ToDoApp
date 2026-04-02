@@ -81,6 +81,22 @@ class TaskViewModel(private val repository: TaskRepository) : ViewModel() {
         }
     }
 
+    fun toggleTaskCompleted(task: TaskDomain, completed: Boolean) {
+        viewModelScope.launch {
+            val updated = TaskEntity(
+                id = task.id,
+                title = task.title,
+                content = task.content,
+                date = task.date?: 0L,
+                completed = completed,
+                createdAt = task.createdAt,
+                updatedAt = DateUtils.now()
+            )
+            repository.updateTask(updated)
+
+        }
+    }
+
     fun updateTask(task: TaskDomain, form: TaskFormState) {
         viewModelScope.launch {
             val updated = TaskEntity(

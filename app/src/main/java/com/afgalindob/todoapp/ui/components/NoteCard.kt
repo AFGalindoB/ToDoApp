@@ -8,7 +8,6 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -16,7 +15,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -41,7 +39,6 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.afgalindob.todoapp.R
 import com.afgalindob.todoapp.domain.NoteDomain
@@ -50,7 +47,6 @@ import com.afgalindob.todoapp.ui.theme.AccentSecondary
 import com.afgalindob.todoapp.ui.theme.OnAccentSecondary
 import com.afgalindob.todoapp.ui.theme.OnSurfaceSecondary
 import com.afgalindob.todoapp.ui.theme.SurfaceContainer
-import kotlin.math.roundToInt
 
 @Composable
 fun NoteCard(
@@ -62,10 +58,6 @@ fun NoteCard(
     onDelete: () -> Unit
 ) {
     var offsetX by remember { mutableFloatStateOf(0f) }
-    val animatedOffsetX by animateFloatAsState(
-        targetValue = offsetX,
-        animationSpec = tween(durationMillis = 100)
-    )
 
     val borderWidth by animateDpAsState(
         targetValue = if (expanded) 2.dp else 0.dp,
@@ -106,10 +98,10 @@ fun NoteCard(
                 scaleX = scale,
                 scaleY = scale,
                 transformOrigin = TransformOrigin.Center,
-                alpha = alpha
-
+                alpha = alpha,
+                translationX = offsetX,
+                clip = true
             )
-            .offset { IntOffset(animatedOffsetX.roundToInt(), 0) }
             .pointerInput(Unit) {
                 detectHorizontalDragGestures(
                     onDragEnd = {
@@ -119,8 +111,7 @@ fun NoteCard(
                         offsetX = 0f // regresamos a la posición inicial
                     },
                     onHorizontalDrag = { _, dragAmount ->
-                        offsetX += dragAmount
-                        if (offsetX < 0f) offsetX = 0f // no permitir deslizar hacia la izquierda
+                        offsetX = (offsetX + dragAmount).coerceAtLeast(0f)
                     }
                 )
             }
@@ -146,10 +137,10 @@ fun NoteCard(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clickable(
-                            interactionSource = remember { MutableInteractionSource() },
+                            interactionSource = null,
                             indication = null
                         ) { onExpand() }
-                        .padding(8.dp) // respiración interna
+                        .padding(8.dp)
                 ) {
                     Text(
                         text = note.title,
@@ -181,7 +172,6 @@ fun NoteCard(
                                 .fillMaxWidth()
                                 .heightIn(min = 120.dp)
                         ) {
-                            // El Texto ocupa todo el ancho menos un margen para que no choque con el botón
                             Text(
                                 text = note.content,
                                 style = MaterialTheme.typography.bodyLarge,
