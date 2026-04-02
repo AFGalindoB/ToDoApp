@@ -12,6 +12,8 @@
     <string name="date">Fecha</string>
     <string name="completed">Completada</string>
     <string name="task">Tarea</string>
+    <string name="home">Inicio</string>
+    <string name="trash">Papelera</string>
     <string name="note">Nota</string>
     <string name="notes">Notas</string>
     <string name="tasks">Tareas</string>

@@ -1,6 +1,7 @@
 package com.afgalindob.todoapp.ui.screens
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -14,12 +15,14 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -38,9 +41,19 @@ import com.afgalindob.todoapp.ui.theme.AccentPrimary
 import com.afgalindob.todoapp.ui.theme.BackgroundColor
 import com.afgalindob.todoapp.ui.theme.OnAccentPrimary
 import com.afgalindob.todoapp.viewmodel.NoteViewModel
+import kotlinx.coroutines.delay
 
 @Composable
-fun NotesListScreen(viewModel: NoteViewModel){
+fun NotesListScreen(
+    viewModel: NoteViewModel,
+    onRendered: () -> Unit
+){
+    LaunchedEffect(Unit) {
+        repeat(2) {
+            withFrameNanos { }
+        }
+        onRendered()
+    }
     Surface(modifier = Modifier.fillMaxSize(), color = BackgroundColor) {
         val notes by viewModel.notesDomain.collectAsState()
 

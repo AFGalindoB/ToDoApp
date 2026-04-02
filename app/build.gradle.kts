@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.ksp)
+    kotlin("plugin.serialization") version "2.0.0"
 }
 
 android {
@@ -58,6 +59,9 @@ dependencies {
 
     implementation("androidx.room:room-runtime:2.6.1")
     implementation("androidx.room:room-ktx:2.6.1")
+    implementation(libs.material3)
+    implementation(libs.androidx.compose.animation)
+    implementation(libs.androidx.runtime)
     ksp("androidx.room:room-compiler:2.6.1")
 
     implementation("com.google.code.gson:gson:2.10.1")

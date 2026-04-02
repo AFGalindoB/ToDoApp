@@ -10,6 +10,8 @@
     <string name="description">Description</string>
     <string name="date">Date</string>
     <string name="completed">Completed</string>
+    <string name="home">Home</string>
+    <string name="trash">Trash</string>
     <string name="task">Task</string>
     <string name="note">Note</string>
     <string name="notes">Notes</string>

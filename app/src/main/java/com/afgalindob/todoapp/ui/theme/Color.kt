@@ -11,15 +11,12 @@ import androidx.compose.ui.graphics.Color
 val BackgroundColor = Color(0xFF000000)
 
 // Superficie de nivel 1 (el color de las tarjetas/tarjetas de tareas)
-// Es el azul marino que ya tienes
 val SurfaceContainer = Color(0xFF1C222E)
 
 // Superficie de nivel 2 (para elementos ligeramente más elevados, como los "chips" de la barra inferior)
-// Un tono entre SurfaceContainer y Background
 val SurfaceContainerHigh = Color(0xFF161B26)
 
 // Color para elementos interactivos en estado neutro (un gris oscuro/medio)
-// Esto es lo que usas para el checkbox sin marcar o el icono de filtro.
 val SurfaceVariant = Color(0xFF4A474D)
 
 // =================================================================================

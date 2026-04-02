@@ -12,7 +12,7 @@ import androidx.compose.ui.Modifier
 import com.afgalindob.todoapp.ui.theme.BackgroundColor
 
 @Composable
-fun AccountScreen(
+fun TrashScreen(
     onRendered: () -> Unit
 ){
     LaunchedEffect(Unit) {
@@ -22,6 +22,6 @@ fun AccountScreen(
         onRendered()
     }
     Surface(modifier = Modifier.fillMaxSize(), color = BackgroundColor) {
-        Text("Esta es la pantalla de la cuenta", style = MaterialTheme.typography.headlineMedium)
+        Text("Esta es la pantalla de la papelera", style = MaterialTheme.typography.headlineMedium)
     }
 }

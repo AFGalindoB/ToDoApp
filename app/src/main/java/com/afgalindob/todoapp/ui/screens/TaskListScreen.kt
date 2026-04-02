@@ -3,6 +3,7 @@ package com.afgalindob.todoapp.ui.screens
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import com.afgalindob.todoapp.ui.components.TaskCard
 import androidx.compose.foundation.layout.fillMaxSize
@@ -33,6 +34,9 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.text.style.TextAlign
 import com.afgalindob.todoapp.data.mapper.TaskMapper.toFormState
@@ -50,7 +54,35 @@ import com.afgalindob.todoapp.ui.theme.SurfaceVariant
 
 
 @Composable
-fun TaskListScreen(viewModel: TaskViewModel){
+fun TaskListScreen(
+    viewModel: TaskViewModel,
+    onRendered: () -> Unit,
+    updateTopBar: (@Composable RowScope.() -> Unit) -> Unit
+){
+    var filterDialog by remember { mutableStateOf(false)}
+
+    DisposableEffect(Unit) {
+        // Al entrar: Ponemos el botón
+        updateTopBar {
+            IconButton(onClick = { filterDialog = true }) {
+                Icon(
+                    painter = painterResource(R.drawable.filter),
+                    contentDescription = "Filter",
+                    tint = OnSurfacePrimary
+                )
+            }
+        }
+
+        onDispose {
+            updateTopBar { }
+        }
+    }
+    LaunchedEffect(Unit) {
+        repeat(2) {
+            withFrameNanos { }
+        }
+        onRendered()
+    }
 
     Surface(modifier = Modifier.fillMaxSize(), color = BackgroundColor) {
 
@@ -64,27 +96,9 @@ fun TaskListScreen(viewModel: TaskViewModel){
         var editingTask by remember { mutableStateOf<TaskDomain?>(null) }
         var deletingTask by remember { mutableStateOf<TaskDomain?>(null) }
         val taskErrors = remember { mutableStateMapOf<String, ValidationError>() }
-        var filterDialog by remember { mutableStateOf(false) }
 
         Box(modifier = Modifier.fillMaxSize()){
             Column {
-                // Boton Filtro
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(8.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Spacer(modifier = Modifier.weight(1f))
-                    IconButton(onClick = { filterDialog = true }) {
-                        Icon(
-                            painter = painterResource(R.drawable.filter),
-                            contentDescription = "Filter",
-                            tint = OnSurfacePrimary
-                        )
-                    }
-                }
-
                 if (tasks.isEmpty()){
                     Text(
                         stringResource(R.string.list_placeholder, stringResource(R.string.tasks).lowercase()),
