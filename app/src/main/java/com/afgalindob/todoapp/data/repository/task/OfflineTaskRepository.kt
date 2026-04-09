@@ -2,6 +2,7 @@ package com.afgalindob.todoapp.data.repository.task
 
 import com.afgalindob.todoapp.data.local.dao.TaskDao
 import com.afgalindob.todoapp.data.local.entity.TaskEntity
+import com.afgalindob.todoapp.utils.DateUtils
 import kotlinx.coroutines.flow.Flow
 
 class OfflineTaskRepository(
@@ -20,4 +21,8 @@ class OfflineTaskRepository(
     override suspend fun updateTask(task: TaskEntity) =
         taskDao.updateTask(task)
 
+    override suspend fun setOnDeleteTask(id: Long, days: Long) {
+        val expirationTimestamp = DateUtils.getExpirationTimestamp(days)
+        taskDao.setOnDeleteTask(id, expirationTimestamp)
+    }
 }

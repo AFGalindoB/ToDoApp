@@ -16,6 +16,7 @@ interface TaskDao {
         WHERE 
             date >= :today 
             OR (:showCompleted OR completed = 0)
+            AND deleteAt = 0
         ORDER BY date ASC
     """)
     fun getTasks(showCompleted: Boolean, today: Long): Flow<List<TaskEntity>>
@@ -28,5 +29,8 @@ interface TaskDao {
 
     @Update
     suspend fun updateTask(task: TaskEntity)
+
+    @Query("UPDATE notes SET deleteAt = :timestamp WHERE id = :id")
+    suspend fun setOnDeleteTask(id: Long, timestamp: Long)
 
 }

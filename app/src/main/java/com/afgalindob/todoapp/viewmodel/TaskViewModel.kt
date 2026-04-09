@@ -23,9 +23,11 @@ import kotlinx.coroutines.flow.map
 @OptIn(ExperimentalCoroutinesApi::class)
 class TaskViewModel(private val repository: TaskRepository) : ViewModel() {
 
+    // Mostrar las tareas completadas
     private val showCompleted = MutableStateFlow(false)
     val showCompletedState: StateFlow<Boolean> = showCompleted
 
+    // Obtener las tareas de la base de datos
     val tasks = showCompleted.flatMapLatest { showCompleted ->
         repository.getTasks(showCompleted, today = DateUtils.today())
     }.stateIn(
@@ -44,6 +46,7 @@ class TaskViewModel(private val repository: TaskRepository) : ViewModel() {
                 emptyList()
             )
 
+    // Agrupar las tareas por sección de tiempo
     val tasksBySection: StateFlow<Map<Int, List<TaskDomain>>> =
         tasksDomain.map { list ->
             list.groupBy { it.getSection() }
@@ -69,13 +72,20 @@ class TaskViewModel(private val repository: TaskRepository) : ViewModel() {
                 date = form.date ?: 0L,
                 completed = form.completed,
                 createdAt = now,
-                updatedAt = now
+                updatedAt = now,
+                deleteAt = 0L
             )
             repository.insertTask(task)
         }
     }
 
-    fun deleteTask(task: TaskDomain) {
+    fun softDeleteTask(task: TaskDomain) {
+        viewModelScope.launch {
+            repository.setOnDeleteTask(id = task.id, days = 30)
+        }
+    }
+
+    fun permanentlyDeleteTask(task: TaskDomain) {
         viewModelScope.launch {
             repository.deleteTaskById(task.id)
         }
@@ -90,7 +100,8 @@ class TaskViewModel(private val repository: TaskRepository) : ViewModel() {
                 date = task.date?: 0L,
                 completed = completed,
                 createdAt = task.createdAt,
-                updatedAt = DateUtils.now()
+                updatedAt = DateUtils.now(),
+                deleteAt = 0L
             )
             repository.updateTask(updated)
 
@@ -106,7 +117,8 @@ class TaskViewModel(private val repository: TaskRepository) : ViewModel() {
                 date = form.date ?: 0L,
                 completed = form.completed,
                 createdAt = task.createdAt,
-                updatedAt = DateUtils.now()
+                updatedAt = DateUtils.now(),
+                deleteAt = 0L
             )
             repository.updateTask(updated)
         }

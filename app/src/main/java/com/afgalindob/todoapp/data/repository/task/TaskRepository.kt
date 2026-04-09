@@ -13,4 +13,5 @@ interface TaskRepository {
 
     suspend fun updateTask(task: TaskEntity)
 
+    suspend fun setOnDeleteTask(id: Long, days: Long)
 }

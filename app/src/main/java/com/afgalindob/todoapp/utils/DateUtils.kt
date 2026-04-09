@@ -38,4 +38,11 @@ object DateUtils {
             )
         ).capitalizeWords()
 
+    fun getExpirationTimestamp(days: Long): Long {
+        return LocalDate.now()
+            .plusDays(days)
+            .atStartOfDay(ZoneId.systemDefault())
+            .toInstant()
+            .toEpochMilli()
+    }
 }

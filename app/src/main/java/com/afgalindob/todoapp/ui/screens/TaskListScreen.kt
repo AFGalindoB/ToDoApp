@@ -221,7 +221,7 @@ fun TaskListScreen(
                 type = DialogType.TASK,
 
                 onConfirm = {
-                    viewModel.deleteTask(task)
+                    viewModel.permanentlyDeleteTask(task)
                     deletingTask = null
                 },
 

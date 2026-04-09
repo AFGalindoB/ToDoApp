@@ -170,7 +170,7 @@ fun NotesListScreen(
                 title = it.title,
                 type = DialogType.NOTE,
                 onConfirm = {
-                    viewModel.deleteNote(it)
+                    viewModel.permanentlyDeleteNote(it)
                     deletingNote = null
                 },
                 onDismiss = {

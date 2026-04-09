@@ -12,5 +12,6 @@ data class NoteEntity(
     val title: String,
     val content: String,
     val createdAt: Long,
-    val updatedAt: Long
+    val updatedAt: Long,
+    val deleteAt: Long
 )

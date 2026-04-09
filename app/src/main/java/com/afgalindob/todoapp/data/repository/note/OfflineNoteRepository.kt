@@ -2,6 +2,7 @@ package com.afgalindob.todoapp.data.repository.note
 
 import com.afgalindob.todoapp.data.local.dao.NoteDao
 import com.afgalindob.todoapp.data.local.entity.NoteEntity
+import com.afgalindob.todoapp.utils.DateUtils
 import kotlinx.coroutines.flow.Flow
 
 class OfflineNoteRepository(
@@ -20,4 +21,8 @@ class OfflineNoteRepository(
     override suspend fun updateNote(note: NoteEntity) =
         noteDao.updateNote(note)
 
+    override suspend fun setOnDeleteNote(id: Long, days: Long) {
+        val expirationTimestamp = DateUtils.getExpirationTimestamp(days)
+        noteDao.setOnDeleteNote(id, expirationTimestamp)
+    }
 }

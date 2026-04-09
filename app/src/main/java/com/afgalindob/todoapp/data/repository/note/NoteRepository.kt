@@ -13,5 +13,7 @@ interface NoteRepository {
 
     suspend fun updateNote(note: NoteEntity)
 
+    suspend fun setOnDeleteNote(id: Long, days: Long)
+
 }
 

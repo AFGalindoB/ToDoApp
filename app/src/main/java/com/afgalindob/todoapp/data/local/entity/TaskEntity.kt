@@ -19,5 +19,6 @@ data class TaskEntity(
     val date: Long,
     val completed: Boolean,
     val createdAt: Long,
-    val updatedAt: Long
+    val updatedAt: Long,
+    val deleteAt: Long
 )

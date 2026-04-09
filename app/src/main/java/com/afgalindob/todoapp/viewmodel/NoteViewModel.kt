@@ -43,7 +43,8 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
                 title = form.title,
                 content = form.content,
                 createdAt = now,
-                updatedAt = now
+                updatedAt = now,
+                deleteAt = 0L
             )
             repository.insertNote(note)
         }
@@ -56,13 +57,20 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
                 title = form.title,
                 content = form.content,
                 createdAt = note.createdAt,
-                updatedAt = DateUtils.now()
+                updatedAt = DateUtils.now(),
+                deleteAt = 0L
             )
             repository.updateNote(updated)
         }
     }
 
-    fun deleteNote(note: NoteDomain) {
+    fun softDeleteNote(note: NoteDomain) {
+        viewModelScope.launch {
+            repository.setOnDeleteNote(id = note.id, days = 30)
+        }
+    }
+
+    fun permanentlyDeleteNote(note: NoteDomain) {
         viewModelScope.launch {
             repository.deleteNoteById(note.id)
         }
