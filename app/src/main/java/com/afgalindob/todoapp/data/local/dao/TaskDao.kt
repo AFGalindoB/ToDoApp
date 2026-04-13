@@ -14,12 +14,14 @@ interface TaskDao {
     @Query("""
         SELECT * FROM tasks 
         WHERE 
-            date >= :today 
-            OR (:showCompleted OR completed = 0)
+            (date >= :today OR :showCompleted OR completed = 0)
             AND deleteAt = 0
         ORDER BY date ASC
     """)
     fun getTasks(showCompleted: Boolean, today: Long): Flow<List<TaskEntity>>
+
+    @Query("SELECT * FROM tasks WHERE deleteAt > 0 ORDER BY deleteAt ASC")
+    fun getDeletedTasks(): Flow<List<TaskEntity>>
 
     @Insert(onConflict = OnConflictStrategy.Companion.IGNORE)
     suspend fun insertTask(task: TaskEntity): Long
@@ -30,7 +32,12 @@ interface TaskDao {
     @Update
     suspend fun updateTask(task: TaskEntity)
 
-    @Query("UPDATE notes SET deleteAt = :timestamp WHERE id = :id")
+    @Query("UPDATE tasks SET deleteAt = :timestamp WHERE id = :id")
     suspend fun setOnDeleteTask(id: Long, timestamp: Long)
 
+    @Query("UPDATE tasks SET deleteAt = 0 WHERE id = :id")
+    suspend fun restoreTask(id: Long)
+
+    @Query("DELETE FROM tasks WHERE deleteAt != 0 AND deleteAt < :now")
+    suspend fun deleteExpiredTasks(now: Long)
 }

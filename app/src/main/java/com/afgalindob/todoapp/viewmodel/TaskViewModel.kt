@@ -23,6 +23,13 @@ import kotlinx.coroutines.flow.map
 @OptIn(ExperimentalCoroutinesApi::class)
 class TaskViewModel(private val repository: TaskRepository) : ViewModel() {
 
+    init {
+        viewModelScope.launch {
+            val now = System.currentTimeMillis()
+            repository.deleteExpiredTasks(now)
+        }
+    }
+
     // Mostrar las tareas completadas
     private val showCompleted = MutableStateFlow(false)
     val showCompletedState: StateFlow<Boolean> = showCompleted
@@ -85,9 +92,9 @@ class TaskViewModel(private val repository: TaskRepository) : ViewModel() {
         }
     }
 
-    fun permanentlyDeleteTask(task: TaskDomain) {
+    fun restoreTask(task: TaskDomain) {
         viewModelScope.launch {
-            repository.deleteTaskById(task.id)
+            repository.restoreTask(task.id)
         }
     }
 

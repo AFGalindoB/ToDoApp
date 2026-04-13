@@ -17,6 +17,13 @@ import kotlinx.coroutines.launch
 
 class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
 
+    init {
+        viewModelScope.launch {
+            val now = System.currentTimeMillis()
+            repository.deleteExpiredNotes(now)
+        }
+    }
+
     val notes: StateFlow<List<NoteEntity>> =
         repository.getNotes()
             .stateIn(
@@ -70,9 +77,9 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
         }
     }
 
-    fun permanentlyDeleteNote(note: NoteDomain) {
+    fun restoreNote(note: NoteDomain) {
         viewModelScope.launch {
-            repository.deleteNoteById(note.id)
+            repository.restoreNote(note.id)
         }
     }
 

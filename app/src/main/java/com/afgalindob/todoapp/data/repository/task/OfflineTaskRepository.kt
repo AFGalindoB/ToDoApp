@@ -12,6 +12,9 @@ class OfflineTaskRepository(
     override fun getTasks(showCompleted: Boolean, today: Long): Flow<List<TaskEntity>> =
         taskDao.getTasks(showCompleted, today)
 
+    override fun getDeletedTasks(): Flow<List<TaskEntity>> =
+        taskDao.getDeletedTasks()
+
     override suspend fun insertTask(task: TaskEntity) =
         taskDao.insertTask(task)
 
@@ -25,4 +28,13 @@ class OfflineTaskRepository(
         val expirationTimestamp = DateUtils.getExpirationTimestamp(days)
         taskDao.setOnDeleteTask(id, expirationTimestamp)
     }
+
+    override suspend fun restoreSetOnDeleteTask(id: Long, days: Long) =
+        taskDao.setOnDeleteTask(id, days)
+
+    override suspend fun restoreTask(id: Long) =
+        taskDao.restoreTask(id)
+
+    override suspend fun deleteExpiredTasks(now: Long) =
+        taskDao.deleteExpiredTasks(now)
 }

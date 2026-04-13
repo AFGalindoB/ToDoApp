@@ -12,6 +12,9 @@ class OfflineNoteRepository(
     override fun getNotes(): Flow<List<NoteEntity>> =
         noteDao.getNotes()
 
+    override fun getDeletedNotes(): Flow<List<NoteEntity>> =
+        noteDao.getDeletedNotes()
+
     override suspend fun insertNote(note: NoteEntity) =
         noteDao.insertNote(note)
 
@@ -25,4 +28,13 @@ class OfflineNoteRepository(
         val expirationTimestamp = DateUtils.getExpirationTimestamp(days)
         noteDao.setOnDeleteNote(id, expirationTimestamp)
     }
+
+    override suspend fun restoreSetOnDeleteNote(id: Long, days: Long) =
+        noteDao.setOnDeleteNote(id, days)
+
+    override suspend fun restoreNote(id: Long) =
+        noteDao.restoreNote(id)
+
+    override suspend fun deleteExpiredNotes(now: Long) =
+        noteDao.deleteExpiredNotes(now)
 }

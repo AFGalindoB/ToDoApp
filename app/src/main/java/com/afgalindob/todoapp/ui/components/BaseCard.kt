@@ -1,75 +1,83 @@
 package com.afgalindob.todoapp.ui.components
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.afgalindob.todoapp.R
-import com.afgalindob.todoapp.domain.TaskDomain
 import com.afgalindob.todoapp.ui.theme.AccentPrimary
-import com.afgalindob.todoapp.ui.theme.AccentSecondary
-import com.afgalindob.todoapp.ui.theme.OnAccentSecondary
 import com.afgalindob.todoapp.ui.theme.OnSurfaceSecondary
 import com.afgalindob.todoapp.ui.theme.SurfaceContainer
-import com.afgalindob.todoapp.ui.theme.SurfaceVariant
-import com.afgalindob.todoapp.utils.DateUtils
+import kotlinx.coroutines.launch
+
+sealed interface CardEvent {
+    object Swipe : CardEvent
+}
 
 @Composable
-fun TaskCard(
-    task: TaskDomain,
+fun BaseCard(
     expanded: Boolean,
     anyCardExpanded: Boolean,
+    enableSwipe: Boolean = true,
     onExpand: () -> Unit,
-    onToggleCompleted: (Boolean) -> Unit,
-    onEdit: () -> Unit,
-    onDelete: () -> Unit
-) {
+    onEvent: (CardEvent) -> Unit,
 
-    var offsetX by remember { mutableFloatStateOf(0f) }
+    headerPrefix: @Composable (() -> Unit)? = null,
+    titleArea: @Composable RowScope.() -> Unit,
+    expandedContent: @Composable ColumnScope.() -> Unit,
+    actionArea: @Composable (BoxScope.() -> Unit)? = null
+) {
+    // Obtenemos el ancho de la pantalla para saber hasta dónde desplazar
+    val screenWidth = LocalConfiguration.current.screenWidthDp.dp
+    val density = LocalDensity.current
+    val screenWidthPx = with(density) { screenWidth.toPx() }
+
+    // Usamos Animatable para tener control total sobre la animación del desplazamiento
+    val offsetX = remember { Animatable(0f) }
+    val scope = rememberCoroutineScope()
 
     val borderWidth by animateDpAsState(
         targetValue = if (expanded) 2.dp else 0.dp,
         animationSpec = tween(durationMillis = 300),
         label = "BorderAnimation"
     )
-
     val scale by animateFloatAsState(
         targetValue = when {
             expanded -> 1.0f
@@ -79,7 +87,6 @@ fun TaskCard(
         animationSpec = tween(durationMillis = 300),
         label = "ScaleAnimation"
     )
-
     val alpha by animateFloatAsState(
         targetValue = when {
             expanded -> 1.0f
@@ -89,7 +96,6 @@ fun TaskCard(
         animationSpec = tween(durationMillis = 300),
         label = "AlphaAnimation"
     )
-
     val rotationAngle by animateFloatAsState(
         targetValue = if (expanded) -180f else 0f,
         animationSpec = tween(durationMillis = 300),
@@ -103,24 +109,50 @@ fun TaskCard(
                 scaleX = scale,
                 scaleY = scale,
                 alpha = alpha,
-                translationX = offsetX,
+                translationX = offsetX.value,
                 transformOrigin = TransformOrigin.Center,
                 clip = true
             )
-            .pointerInput(Unit) {
-                detectHorizontalDragGestures(
-                    onDragEnd = {
-                        if (offsetX > 200f) { // umbral para acción
-                            onDelete()
-                        }
-                        offsetX = 0f // regresamos a la posición inicial
-                    },
-                    onHorizontalDrag = { _, dragAmount ->
-                        offsetX = (offsetX + dragAmount).coerceAtLeast(0f)
+            .then(
+                if (enableSwipe) {
+                    Modifier.pointerInput(Unit) {
+                        detectHorizontalDragGestures(
+                            onDragEnd = {
+                                scope.launch {
+                                    if (offsetX.value > 300f) {
+                                        scope.launch {
+                                            offsetX.animateTo(
+                                                targetValue = screenWidthPx,
+                                                animationSpec = tween(
+                                                    durationMillis = 600, // Doblamos el tiempo
+                                                    easing = FastOutSlowInEasing // Comienza rápido y frena al final
+                                                )
+                                            )
+                                            onEvent(CardEvent.Swipe)
+                                        }
+                                    } else {
+                                        // Devolvemos a su posición original
+                                        offsetX.animateTo(
+                                            targetValue = 0f,
+                                            animationSpec = spring(
+                                                dampingRatio = Spring.DampingRatioMediumBouncy,
+                                                stiffness = Spring.StiffnessLow
+                                            )
+                                        )
+                                    }
+                                }
+                            },
+                            onHorizontalDrag = { _, dragAmount ->
+                                // Actualización inmediata durante el arrastre
+                                scope.launch {
+                                    offsetX.snapTo((offsetX.value + dragAmount).coerceAtLeast(0f))
+                                }
+                            }
+                        )
                     }
-                )
-            }
-    )  {
+                } else Modifier
+            )
+    ) {
         Card(
             modifier = Modifier
                 .fillMaxWidth()
@@ -136,19 +168,8 @@ fun TaskCard(
 
                 // --- HEADER ---
                 Row(verticalAlignment = Alignment.CenterVertically) {
+                    headerPrefix?.invoke()
 
-                    Checkbox(
-                        checked = task.completed,
-                        onCheckedChange = { onToggleCompleted(it) },
-                        colors = androidx.compose.material3.CheckboxDefaults.colors(
-                            checkedColor = AccentPrimary,
-                            uncheckedColor = SurfaceVariant
-                        )
-                    )
-
-                    Spacer(Modifier.width(5.dp))
-
-                    // titulo y expandir
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier
@@ -159,26 +180,7 @@ fun TaskCard(
                             ) { onExpand() }
                             .padding(8.dp)
                     ) {
-                        Column(modifier = Modifier.weight(1f)) {
-
-                            Text(
-                                text = task.title,
-                                style = MaterialTheme.typography.headlineMedium,
-                                maxLines = if (expanded) Int.MAX_VALUE else 1,
-                                overflow = if (expanded) TextOverflow.Clip else TextOverflow.Ellipsis
-                            )
-
-                            task.date?.let {
-                                Text(
-                                    text = DateUtils.formatReadable(DateUtils.fromTimestamp(it)),
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = OnSurfaceSecondary,
-                                )
-                            }
-                        }
-
-                        Spacer(Modifier.width(5.dp))
-
+                        titleArea()
                         Icon(
                             painter = painterResource(R.drawable.expand_more),
                             contentDescription = "Expand",
@@ -187,7 +189,6 @@ fun TaskCard(
                                 .padding(5.dp)
                                 .graphicsLayer(rotationZ = rotationAngle)
                         )
-
                     }
                 }
 
@@ -196,33 +197,11 @@ fun TaskCard(
                     Column {
                         Spacer(Modifier.height(10.dp))
 
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .heightIn(min = 120.dp)
-                        ) {
-                            Text(
-                                text = task.content,
-                                style = MaterialTheme.typography.bodyLarge,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(end = 48.dp) // Espacio reservado para que el texto no pase por debajo del botón
-                            )
-
-                            IconButton(
-                                onClick = onEdit,
-                                modifier = Modifier
-                                    .align(Alignment.TopEnd) // Lo anclamos arriba a la derecha
-                                    .size(40.dp)
-                                    .clip(CircleShape)
-                                    .background(AccentSecondary)
-                            ) {
-                                Icon(
-                                    painter = painterResource(R.drawable.edit),
-                                    contentDescription = "Edit Task",
-                                    tint = OnAccentSecondary
-                                )
+                        Box(modifier = Modifier.fillMaxWidth().heightIn(min = 120.dp)) {
+                            Column(modifier = Modifier.fillMaxWidth().padding(end = 48.dp)) {
+                                expandedContent()
                             }
+                            actionArea?.invoke(this)
                         }
                     }
                 }

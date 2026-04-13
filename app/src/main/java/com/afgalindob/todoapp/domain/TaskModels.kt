@@ -13,5 +13,6 @@ data class TaskDomain(
     val content: String,
     val date: Long?,
     val completed: Boolean,
-    val createdAt: Long
+    val createdAt: Long,
+    val deleteAt: Long?
 )

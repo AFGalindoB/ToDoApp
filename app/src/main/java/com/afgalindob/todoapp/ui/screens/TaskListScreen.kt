@@ -1,16 +1,19 @@
 package com.afgalindob.todoapp.ui.screens
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
-import com.afgalindob.todoapp.ui.components.TaskCard
+import com.afgalindob.todoapp.ui.components.cards.TaskCard
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -26,27 +29,33 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.afgalindob.todoapp.R
-import com.afgalindob.todoapp.ui.dialogs.DeleteEntityDialog
 import com.afgalindob.todoapp.ui.dialogs.TaskUpserDialog
 import com.afgalindob.todoapp.viewmodel.TaskViewModel
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextAlign
 import com.afgalindob.todoapp.domain.TaskDomain
 import com.afgalindob.todoapp.domain.validation.ValidationError
-import com.afgalindob.todoapp.navigation.DialogType
 import com.afgalindob.todoapp.navigation.FormMode
+import com.afgalindob.todoapp.ui.components.EntitySnackbar
 import com.afgalindob.todoapp.ui.components.SectionHeader
+import com.afgalindob.todoapp.ui.components.cards.TaskEvent
 import com.afgalindob.todoapp.ui.dialogs.FilterBottomSheet
 import com.afgalindob.todoapp.ui.theme.AccentPrimary
+import com.afgalindob.todoapp.ui.theme.AccentSecondary
 import com.afgalindob.todoapp.ui.theme.BackgroundColor
 import com.afgalindob.todoapp.ui.theme.OnAccentPrimary
+import com.afgalindob.todoapp.ui.theme.OnAccentSecondary
 import com.afgalindob.todoapp.ui.theme.OnSurfacePrimary
 
 @Composable
@@ -69,14 +78,10 @@ fun TaskListScreen(
             }
         }
 
-        onDispose {
-            updateTopBar { }
-        }
+        onDispose { updateTopBar { } }
     }
     LaunchedEffect(Unit) {
-        repeat(2) {
-            withFrameNanos { }
-        }
+        repeat(2) { withFrameNanos { } }
         onRendered()
     }
 
@@ -88,9 +93,11 @@ fun TaskListScreen(
 
         var expandedTaskId by remember { mutableStateOf<Long?>(null) }
 
+        val snackbarHostState = remember { SnackbarHostState() }
+        var deletingTask by remember { mutableStateOf<TaskDomain?>(null) }
+
         var dialogMode by remember { mutableStateOf<String?>(null) }
         var editingTask by remember { mutableStateOf<TaskDomain?>(null) }
-        var deletingTask by remember { mutableStateOf<TaskDomain?>(null) }
         val taskErrors = remember { mutableStateMapOf<String, ValidationError>() }
 
         val onToggle = remember(viewModel) {
@@ -138,15 +145,43 @@ fun TaskListScreen(
                             val isExpanded = expandedTaskId == task.id
                             TaskCard(
                                 task = task,
+                                date = task.date,
                                 expanded = isExpanded,
                                 onExpand = { onExpandAction(task.id) },
                                 anyCardExpanded = isAnyExpanded,
-                                onToggleCompleted = { completed -> onToggle(task, completed) },
-                                onEdit = { onEditAction(task) },
-                                onDelete = { deletingTask = task }
+                                onEvent = { event ->
+                                    if (event is TaskEvent.Delete) {
+                                        deletingTask = task
+                                    }
+                                    if (event is TaskEvent.ToggleCompleted) {
+                                        onToggle(task, event.completed)
+                                    }
+                                    if (event is TaskEvent.Edit) {
+                                        onEditAction(task)
+                                    }
+
+                                },
+                                actionArea = {
+                                    IconButton(
+                                        onClick = { onEditAction(task) },
+                                        modifier = Modifier
+                                            .align(Alignment.TopEnd)
+                                            .size(40.dp)
+                                            .clip(CircleShape)
+                                            .background(AccentSecondary)
+                                    ) {
+                                        Icon(
+                                            painter = painterResource(R.drawable.edit),
+                                            contentDescription = "Edit Task",
+                                            tint = OnAccentSecondary
+                                        )
+                                    }
+                                }
                             )
                         }
                     }
+
+                    // Footer de la lista
                     item { Spacer(Modifier.height(50.dp)) }
                     item {
                         if (!tasks.isEmpty()) {
@@ -162,6 +197,10 @@ fun TaskListScreen(
                     }
                 }
             }
+            EntitySnackbar(
+                hostState = snackbarHostState,
+                modifier = Modifier.align(Alignment.BottomCenter)
+            )
 
             FloatingActionButton(
                 onClick = {
@@ -213,22 +252,25 @@ fun TaskListScreen(
                 }
             )
         }
+        val undoLabel = stringResource(R.string.undo)
+        val messageLabel = stringResource(R.string.task) + " " + stringResource(R.string.sent_to_trash).lowercase()
+        LaunchedEffect(deletingTask) {
+            val taskToHandle = deletingTask // Copia local para evitar problemas de referencia
+            if (taskToHandle != null) {
+                viewModel.softDeleteTask(taskToHandle)
 
-        deletingTask?.let { task ->
-            DeleteEntityDialog(
-                title = task.title,
+                val result = snackbarHostState.showSnackbar(
+                    message = messageLabel,
+                    actionLabel = undoLabel,
+                    duration = SnackbarDuration.Short
+                )
 
-                type = DialogType.TASK,
-
-                onConfirm = {
-                    viewModel.permanentlyDeleteTask(task)
-                    deletingTask = null
-                },
-
-                onDismiss = {
-                    deletingTask = null
+                if (result == SnackbarResult.ActionPerformed) {
+                    viewModel.restoreTask(taskToHandle)
                 }
-            )
+
+                deletingTask = null
+            }
         }
         if (filterDialog) {
             FilterBottomSheet(

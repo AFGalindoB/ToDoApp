@@ -6,6 +6,8 @@ import com.afgalindob.todoapp.data.repository.note.NoteRepository
 import com.afgalindob.todoapp.data.repository.note.OfflineNoteRepository
 import com.afgalindob.todoapp.data.repository.task.OfflineTaskRepository
 import com.afgalindob.todoapp.data.repository.task.TaskRepository
+import com.afgalindob.todoapp.data.repository.trash.OfflineTrashRepository
+import com.afgalindob.todoapp.data.repository.trash.TrashRepository
 
 class AppDataContainer(private val context: Context) : AppContainer {
 
@@ -17,5 +19,9 @@ class AppDataContainer(private val context: Context) : AppContainer {
 
     override val noteRepository: NoteRepository by lazy {
         OfflineNoteRepository(database.noteDao())
+    }
+
+    override val trashRepository: TrashRepository by lazy {
+        OfflineTrashRepository(taskRepository, noteRepository)
     }
 }

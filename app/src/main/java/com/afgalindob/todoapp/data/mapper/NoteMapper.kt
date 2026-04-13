@@ -10,7 +10,8 @@ object NoteMapper{
             id = id,
             title = title,
             content = content,
-            createdAt = createdAt
+            createdAt = createdAt,
+            deleteAt = if (deleteAt == 0L) null else deleteAt
         )
     }
 }

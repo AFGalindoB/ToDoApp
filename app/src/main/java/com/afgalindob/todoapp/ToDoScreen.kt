@@ -54,6 +54,7 @@ import com.afgalindob.todoapp.ui.theme.OnSurfaceSecondary
 import androidx.compose.animation.core.Animatable
 import androidx.compose.runtime.LaunchedEffect
 import com.afgalindob.todoapp.navigation.AccountGraph
+import com.afgalindob.todoapp.viewmodel.TrashViewModel
 
 enum class AppTransitionState {
     IDLE,           // App en reposo, contenido visible
@@ -75,6 +76,10 @@ fun ToDoApp() {
     val noteViewModel: NoteViewModel = viewModel {
         NoteViewModel(container.noteRepository)
     }
+    val trashViewModel: TrashViewModel = viewModel {
+        TrashViewModel(container.trashRepository)
+    }
+
 
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val navBackStackEntry by navController.currentBackStackEntryAsState()
@@ -215,6 +220,7 @@ fun ToDoApp() {
                     navigation<TrashGraph>(startDestination = TrashScreen) {
                         composable<TrashScreen> {
                             TrashScreen(
+                                viewModel = trashViewModel,
                                 onRendered = { isContentReady = true }
                             )
                         }

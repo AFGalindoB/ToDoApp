@@ -1,16 +1,23 @@
 package com.afgalindob.todoapp.ui.screens
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -21,10 +28,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -34,12 +43,16 @@ import com.afgalindob.todoapp.domain.NoteDomain
 import com.afgalindob.todoapp.domain.validation.ValidationError
 import com.afgalindob.todoapp.navigation.DialogType
 import com.afgalindob.todoapp.navigation.FormMode
-import com.afgalindob.todoapp.ui.components.NoteCard
+import com.afgalindob.todoapp.ui.components.EntitySnackbar
+import com.afgalindob.todoapp.ui.components.cards.NoteCard
+import com.afgalindob.todoapp.ui.components.cards.NoteEvent
 import com.afgalindob.todoapp.ui.dialogs.DeleteEntityDialog
 import com.afgalindob.todoapp.ui.dialogs.NoteUpserDialog
 import com.afgalindob.todoapp.ui.theme.AccentPrimary
+import com.afgalindob.todoapp.ui.theme.AccentSecondary
 import com.afgalindob.todoapp.ui.theme.BackgroundColor
 import com.afgalindob.todoapp.ui.theme.OnAccentPrimary
+import com.afgalindob.todoapp.ui.theme.OnAccentSecondary
 import com.afgalindob.todoapp.viewmodel.NoteViewModel
 
 @Composable
@@ -48,9 +61,7 @@ fun NotesListScreen(
     onRendered: () -> Unit
 ){
     LaunchedEffect(Unit) {
-        repeat(2) {
-            withFrameNanos { }
-        }
+        repeat(2) { withFrameNanos { } }
         onRendered()
     }
     Surface(modifier = Modifier.fillMaxSize(), color = BackgroundColor) {
@@ -58,10 +69,13 @@ fun NotesListScreen(
 
         var expandedNoteId by remember { mutableStateOf<Long?>(null) }
 
+        val snackbarHostState = remember { SnackbarHostState() }
+        val scope = rememberCoroutineScope()
+        var deletingNote by remember { mutableStateOf<NoteDomain?>(null) }
+
         var dialogMode by remember { mutableStateOf<String?>(null) }
         var editingNote by remember { mutableStateOf<NoteDomain?>(null) }
         val noteErrors = remember { mutableStateMapOf<String, ValidationError>() }
-        var deletingNote by remember { mutableStateOf<NoteDomain?>(null) }
 
         val onExpandAction = remember {
             { id: Long -> expandedNoteId = if (expandedNoteId == id) null else id }
@@ -104,8 +118,30 @@ fun NotesListScreen(
                         expanded = isExpanded,
                         anyCardExpanded = isAnyExpanded,
                         onExpand = { onExpandAction(note.id) },
-                        onEdit = { onEditAction(note) },
-                        onDelete = { deletingNote = note }
+                        onEvent = { event ->
+                            if (event is NoteEvent.Edit) {
+                                onEditAction(note)
+                            }
+                            if (event is NoteEvent.Delete) {
+                                deletingNote = note
+                            }
+                        },
+                        actionArea = {
+                            IconButton(
+                                onClick = { onEditAction(note) },
+                                modifier = Modifier
+                                    .align(Alignment.TopEnd)
+                                    .size(40.dp)
+                                    .clip(CircleShape)
+                                    .background(AccentSecondary)
+                            ) {
+                                Icon(
+                                    painter = painterResource(R.drawable.edit),
+                                    contentDescription = "Edit Note",
+                                    tint = OnAccentSecondary
+                                )
+                            }
+                        }
                     )
                 }
                 if (!notes.isEmpty()) {
@@ -122,6 +158,12 @@ fun NotesListScreen(
                     }
                 }
             }
+
+            EntitySnackbar(
+                hostState = snackbarHostState,
+                modifier = Modifier.align(Alignment.BottomCenter)
+            )
+
             FloatingActionButton(
                 onClick = {
                     editingNote = null
@@ -165,19 +207,25 @@ fun NotesListScreen(
                 }
             )
         }
-        deletingNote?.let {
-            DeleteEntityDialog(
-                title = it.title,
-                type = DialogType.NOTE,
-                onConfirm = {
-                    viewModel.permanentlyDeleteNote(it)
-                    deletingNote = null
-                },
-                onDismiss = {
-                    deletingNote = null
-                }
-            )
+        val undoLabel = stringResource(R.string.undo)
+        val messageLabel = stringResource(R.string.note) + " " + stringResource(R.string.sent_to_trash).lowercase()
+        LaunchedEffect(deletingNote) {
+            val noteToHandle = deletingNote // Copia local para evitar problemas de referencia
+            if (noteToHandle != null) {
+                viewModel.softDeleteNote(noteToHandle)
 
+                val result = snackbarHostState.showSnackbar(
+                    message = messageLabel,
+                    actionLabel = undoLabel,
+                    duration = SnackbarDuration.Short
+                )
+
+                if (result == SnackbarResult.ActionPerformed) {
+                    viewModel.restoreNote(noteToHandle)
+                }
+
+                deletingNote = null
+            }
         }
     }
 }

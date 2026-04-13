@@ -3,10 +3,15 @@
     <string name="app_name">ToDoApp</string>
     <string name="label_new">Nueva</string>
     <string name="list_placeholder">Aún no tienes %1$s\nToca el botón + para crear una</string>
+    <string name="trash_placeholder">La papelera está vacía</string>
     <string name="field_required">Este campo es obligatorio</string>
     <string name="max_length">Máximo %1$d caracteres</string>
     <string name="end_of_list">No hay más</string>
     <string name="delete_dialog">¿Desea eliminar esta %1$s?</string>
+    <string name="will_be_deleted">Será eliminado el:</string>
+    <string name="undo">Deshacer</string>
+    <string name="restored">Restaurada</string>
+    <string name="sent_to_trash">Enviado a la papelera</string>
     <string name="title">Titulo</string>
     <string name="description">Descripcion</string>
     <string name="date">Fecha</string>

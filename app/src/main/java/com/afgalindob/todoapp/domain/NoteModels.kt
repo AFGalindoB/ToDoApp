@@ -9,5 +9,6 @@ data class NoteDomain(
     val id: Long,
     val title: String,
     val content: String,
-    val createdAt: Long
+    val createdAt: Long,
+    val deleteAt: Long?
 )

@@ -12,7 +12,8 @@ object TaskMapper {
             content = content,
             date = if (date == 0L) null else date,
             completed = completed,
-            createdAt = createdAt
+            createdAt = createdAt,
+            deleteAt = if (deleteAt == 0L) null else deleteAt
         )
     }
 

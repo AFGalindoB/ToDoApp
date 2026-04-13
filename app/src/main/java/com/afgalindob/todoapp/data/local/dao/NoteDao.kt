@@ -13,6 +13,9 @@ interface NoteDao {
     @Query("SELECT * FROM notes WHERE deleteAt = 0 ORDER BY createdAt ASC")
     fun getNotes(): Flow<List<NoteEntity>>
 
+    @Query("SELECT * FROM notes WHERE deleteAt > 0 ORDER BY deleteAt ASC")
+    fun getDeletedNotes(): Flow<List<NoteEntity>>
+
     @Insert(onConflict = OnConflictStrategy.Companion.IGNORE)
     suspend fun insertNote(note: NoteEntity): Long
 
@@ -25,4 +28,9 @@ interface NoteDao {
     @Query("UPDATE notes SET deleteAt = :timestamp WHERE id = :id")
     suspend fun setOnDeleteNote(id: Long, timestamp: Long)
 
+    @Query("UPDATE notes SET deleteAt = 0 WHERE id = :id")
+    suspend fun restoreNote(id: Long)
+
+    @Query("DELETE FROM notes WHERE deleteAt != 0 AND deleteAt < :now")
+    suspend fun deleteExpiredNotes(now: Long)
 }
