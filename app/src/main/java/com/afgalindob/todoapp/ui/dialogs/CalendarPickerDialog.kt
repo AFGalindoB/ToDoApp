@@ -5,6 +5,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -36,6 +37,7 @@ import java.time.Month
 import androidx.compose.ui.window.Dialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.TextButton
 import androidx.compose.ui.res.stringResource
 import com.afgalindob.todoapp.ui.theme.AccentPrimary
@@ -54,21 +56,34 @@ enum class CalendarViewMode {
 
 @Composable
 fun CalendarDialog(
-    selectedDate: LocalDate?,
-    onDateSelected: (Long) -> Unit,
+    selectedDate: Long?,
+    onDateSelected: (Long?) -> Unit,
     onDismiss: () -> Unit
 ) {
+    val today = LocalDate.now()
+    val tomorrow = today.plusDays(1)
+    val nextWeek = today.plusDays(7)
+
+    val initialLocalDate = remember(selectedDate) {
+        selectedDate?.let { DateUtils.fromTimestamp(it) }
+    }
+    var viewMode by remember { mutableStateOf(CalendarViewMode.DAY) }
     Dialog(onDismissRequest = onDismiss) {
 
-        var currentMonth by remember(selectedDate) {
+        var currentMonth by remember(initialLocalDate) {
             mutableStateOf(
-                selectedDate?.let { YearMonth.from(it) } ?: YearMonth.now()
+                initialLocalDate?.let { YearMonth.from(it) } ?: YearMonth.now()
             )
         }
-        var viewMode by remember { mutableStateOf(CalendarViewMode.DAY) }
-        var tempSelectedDate by remember(selectedDate) {
-            mutableStateOf(selectedDate)
+        var tempSelectedDate by remember(initialLocalDate) {
+            mutableStateOf(initialLocalDate ?: today)
         }
+
+        val quickOptions = listOf(
+            R.string.today to today,
+            R.string.tomorrow to tomorrow,
+            R.string.next_week to nextWeek
+        )
 
         val days = listOf(
             R.string.monday,
@@ -171,10 +186,35 @@ fun CalendarDialog(
                     )
                 }
 
+                quickOptions.forEach { (labelRes, date) ->
+                    TextButton(
+                        onClick = {
+                            onDateSelected(DateUtils.toTimestamp(date))
+                            onDismiss()
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        contentPadding = PaddingValues(vertical = 4.dp, horizontal = 12.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = stringResource(labelRes),
+                                color = OnSurfacePrimary,
+                                style = MaterialTheme.typography.labelLarge,
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
+                    }
+                }
+
+                HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp), color = OnSurfaceSecondary.copy(alpha = 0.2f))
+
                 // -- FOOTER --
                 TextButton(
                     onClick = {
-                        onDateSelected(0L) // Enviamos 0 para indicar "sin fecha"
+                        onDateSelected(null)
                         onDismiss()
                     },
                     modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)

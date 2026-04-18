@@ -17,7 +17,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -30,7 +29,6 @@ import com.afgalindob.todoapp.R
 import com.afgalindob.todoapp.domain.TaskDomain
 import com.afgalindob.todoapp.domain.TaskFormState
 import com.afgalindob.todoapp.utils.DateUtils
-import java.time.LocalDate
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
@@ -65,7 +63,7 @@ fun TaskUpserDialog(
 
     var title by remember { mutableStateOf(task?.title ?: "") }
     var content by remember { mutableStateOf(task?.content ?: "") }
-    var date by remember { mutableLongStateOf(task?.date ?: 0L) }
+    var date by remember { mutableStateOf(task?.date) }
     var completed by remember { mutableStateOf(task?.completed ?: false) }
 
     var isTitleFocused by remember { mutableStateOf(false) }
@@ -77,11 +75,6 @@ fun TaskUpserDialog(
         focusedIndicatorColor = Color.Transparent,
         unfocusedIndicatorColor = Color.Transparent
     )
-
-    val initialDate =
-        if (date == 0L) LocalDate.now()
-        else DateUtils.fromTimestamp(date)
-    var selectedDate by remember { mutableStateOf(initialDate) }
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -197,13 +190,11 @@ fun TaskUpserDialog(
 
                 // --- FECHA ---
                 Text(
-                    text =
-                        if (date == 0L)
-                            stringResource(R.string.add) + " " + stringResource(R.string.date)
-                        else
-                            DateUtils.formatReadable(DateUtils.fromTimestamp(date)),
+                    text = date?.let {
+                        DateUtils.formatReadable(DateUtils.fromTimestamp(it))
+                    } ?: (stringResource(R.string.add) + " " + stringResource(R.string.date)),
                     style = MaterialTheme.typography.bodyLarge,
-                    color = if (date == 0L) OnSurfaceSecondary
+                    color = if (date == null) OnSurfaceSecondary
                             else OnSurfacePrimary,
                     textAlign = TextAlign.Center,
                     modifier = Modifier
@@ -215,10 +206,9 @@ fun TaskUpserDialog(
                 // Dialogo calendario
                 if (showDateDialog) {
                     CalendarDialog(
-                        selectedDate = selectedDate,
-                        onDateSelected = { timestamp ->
-                            date = timestamp
-                            selectedDate = DateUtils.fromTimestamp(timestamp)
+                        selectedDate = date,
+                        onDateSelected = { newDate ->
+                            date = newDate // Recibe Long? (puede ser null)
                             showDateDialog = false
                         },
                         onDismiss = { showDateDialog = false }
