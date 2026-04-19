@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">ToDoApp</string>
+    <string name="app_name">NoirAssistant</string>
     <string name="label_new">Nueva</string>
     <string name="list_placeholder">Aún no tienes %1$s\nToca el botón + para crear una</string>
     <string name="trash_placeholder">La papelera está vacía</string>

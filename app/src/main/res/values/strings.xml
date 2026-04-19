@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name" translatable="false">ToDoApp</string>
+    <string name="app_name" translatable="false">AssistantApp</string>
     <string name="label_new">New</string>
     <string name="list_placeholder">You don\'t have any %1$s yet\nTap the + button to create one</string>
     <string name="trash_placeholder">The trash is empty</string>
