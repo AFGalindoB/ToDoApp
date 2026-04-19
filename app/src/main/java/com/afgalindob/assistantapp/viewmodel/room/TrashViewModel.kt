@@ -1,7 +1,9 @@
-package com.afgalindob.assistantapp.viewmodel
+package com.afgalindob.assistantapp.viewmodel.room
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.afgalindob.assistantapp.data.mapper.NoteMapper.toDomain
+import com.afgalindob.assistantapp.data.mapper.TaskMapper.toDomain
 import com.afgalindob.assistantapp.data.repository.trash.TrashRepository
 import com.afgalindob.assistantapp.domain.NoteDomain
 import com.afgalindob.assistantapp.domain.TaskDomain
@@ -10,8 +12,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import com.afgalindob.assistantapp.data.mapper.NoteMapper.toDomain
-import com.afgalindob.assistantapp.data.mapper.TaskMapper.toDomain
 
 class TrashViewModel(private val repository: TrashRepository) : ViewModel() {
 
@@ -20,7 +20,7 @@ class TrashViewModel(private val repository: TrashRepository) : ViewModel() {
             .map { list -> list.map { it.toDomain() } }
             .stateIn(
                 scope = viewModelScope,
-                started = SharingStarted.WhileSubscribed(5000),
+                started = SharingStarted.Companion.WhileSubscribed(5000),
                 initialValue = emptyList()
             )
 
@@ -29,7 +29,7 @@ class TrashViewModel(private val repository: TrashRepository) : ViewModel() {
             .map { list -> list.map { it.toDomain() } }
             .stateIn(
                 scope = viewModelScope,
-                started = SharingStarted.WhileSubscribed(5000),
+                started = SharingStarted.Companion.WhileSubscribed(5000),
                 initialValue = emptyList()
             )
 

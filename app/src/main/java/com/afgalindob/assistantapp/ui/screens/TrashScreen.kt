@@ -48,7 +48,7 @@ import com.afgalindob.assistantapp.ui.dialogs.DeleteEntityDialog
 import com.afgalindob.assistantapp.ui.theme.AccentSecondary
 import com.afgalindob.assistantapp.ui.theme.BackgroundColor
 import com.afgalindob.assistantapp.ui.theme.OnAccentSecondary
-import com.afgalindob.assistantapp.viewmodel.TrashViewModel
+import com.afgalindob.assistantapp.viewmodel.room.TrashViewModel
 
 sealed class SelectedEntity {
     data class Task(val task: TaskDomain) : SelectedEntity()

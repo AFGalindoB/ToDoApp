@@ -4,11 +4,27 @@
 
 Inspirada en la agilidad de herramientas de productividad modernas, busca ofrecer una experiencia fluida donde la gestión de la información sea inmediata y privada.
 
+## Vista previa
+
+![Pantalla principal](docs/images/home.jpeg)
+
 ---
 
-## 🚀 Funcionalidades actuales
+## 🚀 Novedades (v1.0.1)
+* **Gestión de Perfil:** Implementación de la pantalla de Cuenta con edición de nombre, biografía y foto de perfil.
+* **Persistencia Ligera:** Integración de **Jetpack DataStore** para el almacenamiento de preferencias de usuario.
+* **UX Avanzada:** Gestión inteligente del foco del teclado.
+* **Documentación:** Corrección de enlaces internos y optimización de guías técnicas.
 
-### 📌 Gestión de Tareas
+![Pantalla de cuenta](docs/images/account.jpeg)
+
+---
+
+## Funcionalidades
+
+### Gestión de Tareas
+
+![Crear o editar tarea](docs/images/form.jpeg)
 
 - **Control Total (CRUD):**  
   Creación, edición y eliminación de tareas con persistencia de datos.
@@ -19,9 +35,7 @@ Inspirada en la agilidad de herramientas de productividad modernas, busca ofrece
 - **Organización Temporal:**  
   Visualización de tareas agrupadas por secciones de tiempo en la interfaz principal.
 
----
-
-### 📝 Gestión de Notas
+### Gestión de Notas
 
 - **Entidad Independiente:**  
   Soporte para notas con una interfaz dedicada, permitiendo capturar ideas de forma rápida.
@@ -29,19 +43,17 @@ Inspirada en la agilidad de herramientas de productividad modernas, busca ofrece
 - **Reutilización Lógica:**  
   Implementación basada en la misma robustez de persistencia que el sistema de tareas.
 
----
-
-### 🔄 Navegación
+### Navegación
 
 - **Navegación Intuitiva:**  
   Interfaz fluida que permite transitar entre los diferentes contextos:
-    - Tareas
-    - Notas
+    - Inicio (Notas y Tareas)
     - Papelera
+    - Cuenta
 
----
+### Papelera de Reciclaje (Soft Delete)
 
-### 🗑️ Papelera de Reciclaje (Soft Delete)
+![Papelera de reciclaje](docs/images/trash.jpeg)
 
 - **Borrado Lógico:**  
   Las entidades eliminadas se mueven a una papelera en lugar de borrarse definitivamente.
@@ -51,7 +63,7 @@ Inspirada en la agilidad de herramientas de productividad modernas, busca ofrece
 
 ---
 
-## 🏗️ Arquitectura y Flujo de Datos
+## Arquitectura y Flujo de Datos
 
 - **Arquitectura Unidireccional:**  
   Separación estricta entre las capas de:
@@ -69,7 +81,32 @@ Inspirada en la agilidad de herramientas de productividad modernas, busca ofrece
 
 ---
 
-## 📄 Licencia
+## Tecnologías utilizadas
+
+- **Kotlin** 
+  Lenguaje principal para la lógica de negocio.
+
+- **Jetpack Compose**  
+  Framework moderno para la construcción de interfaces declarativas y reactivas.
+
+- **Room Persistence**  
+  Biblioteca de abstracción sobre SQLite para el almacenamiento local y seguro de datos.
+
+- **Material Design 3**  
+  Estándar de diseño para componentes reutilizables y modulares.
+
+- **Jetpack DataStore**
+  Persistencia de datos de configuración y perfil. **[Nuevo]**
+
+- **Coil**
+  Carga de imágenes asíncrona. **[Nuevo]**
+
+- **Baseline Profiles**  
+  Herramienta de optimización de rendimiento en tiempo de ejecución.
+
+---
+
+## Licencia
 
 Este proyecto está bajo la **Licencia MIT**.
 
@@ -77,8 +114,10 @@ Fiel a la filosofía de Software Libre, **AssistantApp** es una herramienta abie
 
 ---
 
-## 📚 Documentación adicional
+## Documentación adicional
 
 Para más detalles técnicos sobre la implementación consulte:
 
-👉 [Arquitectura y Flujo de Datos](data/Arch_Data_Flow.md)
+### Flujo de Datos
+* [Flujo de Datos con Room (Persistencia de Tareas y Notas)](docs/Room_Data_Flow.md)
+* [Flujo de Preferencias con DataStore (Perfil de Usuario)](docs/DataStore_Data_Flow.md)

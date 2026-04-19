@@ -31,7 +31,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.afgalindob.assistantapp.R
 import com.afgalindob.assistantapp.ui.dialogs.TaskUpserDialog
-import com.afgalindob.assistantapp.viewmodel.TaskViewModel
+import com.afgalindob.assistantapp.viewmodel.room.TaskViewModel
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme

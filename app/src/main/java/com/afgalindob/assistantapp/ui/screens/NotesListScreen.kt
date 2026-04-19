@@ -51,7 +51,7 @@ import com.afgalindob.assistantapp.ui.theme.AccentSecondary
 import com.afgalindob.assistantapp.ui.theme.BackgroundColor
 import com.afgalindob.assistantapp.ui.theme.OnAccentPrimary
 import com.afgalindob.assistantapp.ui.theme.OnAccentSecondary
-import com.afgalindob.assistantapp.viewmodel.NoteViewModel
+import com.afgalindob.assistantapp.viewmodel.room.NoteViewModel
 
 @Composable
 fun NotesListScreen(

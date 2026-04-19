@@ -1,10 +1,10 @@
-package com.afgalindob.assistantapp.viewmodel
+package com.afgalindob.assistantapp.viewmodel.room
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.afgalindob.assistantapp.data.local.entity.NoteEntity
-import com.afgalindob.assistantapp.data.repository.note.NoteRepository
 import com.afgalindob.assistantapp.data.mapper.NoteMapper.toDomain
+import com.afgalindob.assistantapp.data.repository.note.NoteRepository
 import com.afgalindob.assistantapp.domain.NoteDomain
 import com.afgalindob.assistantapp.domain.NoteFormState
 import com.afgalindob.assistantapp.domain.validation.validateNoteForm
@@ -21,7 +21,7 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
         repository.getNotes()
             .stateIn(
                 scope = viewModelScope,
-                started = SharingStarted.WhileSubscribed(5000),
+                started = SharingStarted.Companion.WhileSubscribed(5000),
                 initialValue = emptyList()
             )
 
@@ -30,7 +30,7 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
             .map { list -> list.map { it.toDomain() } }
             .stateIn(
                 viewModelScope,
-                SharingStarted.WhileSubscribed(5000),
+                SharingStarted.Companion.WhileSubscribed(5000),
                 emptyList()
             )
 

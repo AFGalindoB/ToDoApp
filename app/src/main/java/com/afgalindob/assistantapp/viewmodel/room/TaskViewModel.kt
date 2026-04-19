@@ -1,4 +1,4 @@
-package com.afgalindob.assistantapp.viewmodel
+package com.afgalindob.assistantapp.viewmodel.room
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -11,14 +11,14 @@ import com.afgalindob.assistantapp.domain.validation.validateTaskForm
 import com.afgalindob.assistantapp.utils.DateUtils
 import com.afgalindob.assistantapp.utils.getSection
 import com.afgalindob.assistantapp.utils.sectionOrder
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.map
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class TaskViewModel(private val repository: TaskRepository) : ViewModel() {
@@ -32,7 +32,7 @@ class TaskViewModel(private val repository: TaskRepository) : ViewModel() {
         repository.getTasks(showCompleted, today = DateUtils.today())
     }.stateIn(
         scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5000),
+        started = SharingStarted.Companion.WhileSubscribed(5000),
         initialValue = emptyList()
     )
 
@@ -42,7 +42,7 @@ class TaskViewModel(private val repository: TaskRepository) : ViewModel() {
             .map { list -> list.map { it.toDomain() } }
             .stateIn(
                 viewModelScope,
-                SharingStarted.WhileSubscribed(5000),
+                SharingStarted.Companion.WhileSubscribed(5000),
                 emptyList()
             )
 
@@ -53,7 +53,7 @@ class TaskViewModel(private val repository: TaskRepository) : ViewModel() {
                 .toSortedMap(compareBy { sectionOrder(it) })
         }.stateIn(
             viewModelScope,
-            SharingStarted.WhileSubscribed(5000),
+            SharingStarted.Companion.WhileSubscribed(5000),
             emptyMap()
         )
 
@@ -97,7 +97,7 @@ class TaskViewModel(private val repository: TaskRepository) : ViewModel() {
                 id = task.id,
                 title = task.title,
                 content = task.content,
-                date = task.date?: 0L,
+                date = task.date ?: 0L,
                 completed = completed,
                 createdAt = task.createdAt,
                 updatedAt = DateUtils.now(),

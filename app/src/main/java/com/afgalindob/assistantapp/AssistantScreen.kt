@@ -30,8 +30,8 @@ import com.afgalindob.assistantapp.navigation.TrashGraph
 import com.afgalindob.assistantapp.ui.screens.AccountScreen
 import com.afgalindob.assistantapp.ui.screens.NotesListScreen
 import com.afgalindob.assistantapp.ui.theme.SurfaceContainer
-import com.afgalindob.assistantapp.viewmodel.NoteViewModel
-import com.afgalindob.assistantapp.viewmodel.TaskViewModel
+import com.afgalindob.assistantapp.viewmodel.room.NoteViewModel
+import com.afgalindob.assistantapp.viewmodel.room.TaskViewModel
 import kotlinx.coroutines.launch
 import androidx.navigation.compose.navigation
 import com.afgalindob.assistantapp.navigation.Account
@@ -54,7 +54,8 @@ import androidx.compose.animation.core.Animatable
 import androidx.compose.runtime.LaunchedEffect
 import com.afgalindob.assistantapp.data.container.AppContainer
 import com.afgalindob.assistantapp.navigation.AccountGraph
-import com.afgalindob.assistantapp.viewmodel.TrashViewModel
+import com.afgalindob.assistantapp.viewmodel.SettingsViewModel
+import com.afgalindob.assistantapp.viewmodel.room.TrashViewModel
 
 enum class AppTransitionState {
     IDLE,
@@ -75,6 +76,10 @@ fun AssistantApp(container: AppContainer, isAppReady: Boolean) {
     }
     val trashViewModel: TrashViewModel = viewModel {
         TrashViewModel(container.trashRepository)
+    }
+
+    val settingsViewModel: SettingsViewModel = viewModel {
+        SettingsViewModel(container.userRepository)
     }
 
     val curtainAlpha = remember { Animatable(0f) }
@@ -215,6 +220,7 @@ fun AssistantApp(container: AppContainer, isAppReady: Boolean) {
                     navigation<AccountGraph>(startDestination = Account) {
                         composable<Account> {
                             AccountScreen(
+                                viewModel = settingsViewModel,
                                 onRendered = { isContentReady = true }
                             )
                         }
