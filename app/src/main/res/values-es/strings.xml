@@ -9,6 +9,7 @@
     <string name="end_of_list">No hay más</string>
     <string name="delete_dialog">¿Desea eliminar esta %1$s?</string>
     <string name="will_be_deleted">Será eliminado el:</string>
+    <string name="save">Guardar</string>
     <string name="undo">Deshacer</string>
     <string name="restored">Restaurada</string>
     <string name="sent_to_trash">Enviado a la papelera</string>
@@ -43,4 +44,7 @@
     <string name="this_month">Este Mes</string>
     <string name="more">Mas</string>
     <string name="overdue">Vencida</string>
+    <string name="profile">Perfil</string>
+    <string name="name">Nombre</string>
+    <string name="bio">Bio</string>
 </resources>

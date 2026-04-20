@@ -30,7 +30,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.afgalindob.assistantapp.R
-import com.afgalindob.assistantapp.ui.dialogs.TaskUpserDialog
+import com.afgalindob.assistantapp.ui.dialogs.alert.TaskUpserDialog
 import com.afgalindob.assistantapp.viewmodel.room.TaskViewModel
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.IconButton
@@ -52,7 +52,7 @@ import com.afgalindob.assistantapp.navigation.FormMode
 import com.afgalindob.assistantapp.ui.components.EntitySnackbar
 import com.afgalindob.assistantapp.ui.components.SectionHeader
 import com.afgalindob.assistantapp.ui.components.cards.TaskEvent
-import com.afgalindob.assistantapp.ui.dialogs.FilterBottomSheet
+import com.afgalindob.assistantapp.ui.components.FilterBottomSheet
 import com.afgalindob.assistantapp.ui.theme.AccentPrimary
 import com.afgalindob.assistantapp.ui.theme.AccentSecondary
 import com.afgalindob.assistantapp.ui.theme.BackgroundColor

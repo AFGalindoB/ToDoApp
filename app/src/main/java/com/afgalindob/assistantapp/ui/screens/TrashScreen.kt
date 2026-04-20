@@ -44,7 +44,7 @@ import com.afgalindob.assistantapp.ui.components.EntitySnackbar
 import com.afgalindob.assistantapp.ui.components.SectionHeader
 import com.afgalindob.assistantapp.ui.components.cards.NoteCard
 import com.afgalindob.assistantapp.ui.components.cards.TaskCard
-import com.afgalindob.assistantapp.ui.dialogs.DeleteEntityDialog
+import com.afgalindob.assistantapp.ui.dialogs.alert.DeleteEntityDialog
 import com.afgalindob.assistantapp.ui.theme.AccentSecondary
 import com.afgalindob.assistantapp.ui.theme.BackgroundColor
 import com.afgalindob.assistantapp.ui.theme.OnAccentSecondary

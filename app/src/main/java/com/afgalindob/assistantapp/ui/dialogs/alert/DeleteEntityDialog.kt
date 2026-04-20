@@ -1,4 +1,4 @@
-package com.afgalindob.assistantapp.ui.dialogs
+package com.afgalindob.assistantapp.ui.dialogs.alert
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -93,7 +94,7 @@ fun DeleteEntityDialog(
                 // BOTÓN CANCELAR
                 Button(
                     onClick = onDismiss,
-                    colors = androidx.compose.material3.ButtonDefaults.buttonColors(
+                    colors = ButtonDefaults.buttonColors(
                         containerColor = SurfaceVariant.copy(alpha = 0.3f),
                         contentColor = OnSurfacePrimary
                     ),
@@ -109,7 +110,7 @@ fun DeleteEntityDialog(
                 // BOTÓN ELIMINAR (Confirmar)
                 Button(
                     onClick = onConfirm,
-                    colors = androidx.compose.material3.ButtonDefaults.buttonColors(
+                    colors = ButtonDefaults.buttonColors(
                         containerColor = AccentSecondary,
                         contentColor = OnAccentSecondary
                     ),

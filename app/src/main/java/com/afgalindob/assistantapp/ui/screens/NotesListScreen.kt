@@ -45,7 +45,7 @@ import com.afgalindob.assistantapp.navigation.FormMode
 import com.afgalindob.assistantapp.ui.components.EntitySnackbar
 import com.afgalindob.assistantapp.ui.components.cards.NoteCard
 import com.afgalindob.assistantapp.ui.components.cards.NoteEvent
-import com.afgalindob.assistantapp.ui.dialogs.NoteUpserDialog
+import com.afgalindob.assistantapp.ui.dialogs.alert.NoteUpserDialog
 import com.afgalindob.assistantapp.ui.theme.AccentPrimary
 import com.afgalindob.assistantapp.ui.theme.AccentSecondary
 import com.afgalindob.assistantapp.ui.theme.BackgroundColor

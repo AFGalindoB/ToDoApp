@@ -1,4 +1,4 @@
-package com.afgalindob.assistantapp.ui.dialogs
+package com.afgalindob.assistantapp.ui.dialogs.alert
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -44,6 +44,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import com.afgalindob.assistantapp.domain.validation.ValidationError
 import com.afgalindob.assistantapp.ui.animations.AnimatedPlaceholder
+import com.afgalindob.assistantapp.ui.dialogs.dialog.CalendarDialog
 import com.afgalindob.assistantapp.ui.theme.AccentPrimary
 import com.afgalindob.assistantapp.ui.theme.AccentSecondary
 import com.afgalindob.assistantapp.ui.theme.ErrorColor

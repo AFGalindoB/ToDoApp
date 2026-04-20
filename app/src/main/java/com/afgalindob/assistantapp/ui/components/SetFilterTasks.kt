@@ -1,4 +1,4 @@
-package com.afgalindob.assistantapp.ui.dialogs
+package com.afgalindob.assistantapp.ui.components
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -7,7 +7,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
@@ -35,7 +37,7 @@ fun FilterBottomSheet(
         onDismissRequest = onDismiss,
         containerColor = SurfaceContainer,
         dragHandle = {
-            androidx.compose.material3.BottomSheetDefaults.DragHandle(
+            BottomSheetDefaults.DragHandle(
                 color = OnSurfaceSecondary // O el color que prefieras
             )
         }
@@ -53,7 +55,7 @@ fun FilterBottomSheet(
                 Checkbox(
                     checked = showCompleted,
                     onCheckedChange = onCompletedChanged,
-                    colors = androidx.compose.material3.CheckboxDefaults.colors(
+                    colors = CheckboxDefaults.colors(
                         checkedColor = AccentPrimary,
                         uncheckedColor = SurfaceVariant
                     )

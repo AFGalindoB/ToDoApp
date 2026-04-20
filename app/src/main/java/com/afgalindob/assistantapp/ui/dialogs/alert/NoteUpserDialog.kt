@@ -1,4 +1,4 @@
-package com.afgalindob.assistantapp.ui.dialogs
+package com.afgalindob.assistantapp.ui.dialogs.alert
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box

@@ -4,10 +4,12 @@ import android.content.Intent
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -17,6 +19,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -30,49 +33,71 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import coil.compose.AsyncImage
 import com.afgalindob.assistantapp.R
+import com.afgalindob.assistantapp.data.local.preferences.UserPreferences
+import com.afgalindob.assistantapp.ui.components.ProfileImageSheet
+import com.afgalindob.assistantapp.ui.dialogs.dialog.FullScreenImageRow
+import com.afgalindob.assistantapp.ui.dialogs.dialog.ImageEditDialog
 import com.afgalindob.assistantapp.ui.theme.AccentSecondary
 import com.afgalindob.assistantapp.ui.theme.BackgroundColor
 import com.afgalindob.assistantapp.ui.theme.OnAccentSecondary
 import com.afgalindob.assistantapp.ui.theme.OnSurfacePrimary
 import com.afgalindob.assistantapp.ui.theme.SurfaceVariant
 import com.afgalindob.assistantapp.viewmodel.SettingsViewModel
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.TransformOrigin
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.layout.ContentScale
+import coil.compose.AsyncImage
 
 @Composable
 fun AccountScreen(
     viewModel: SettingsViewModel,
     onRendered: () -> Unit
-){
-    val currentName by viewModel.name.collectAsStateWithLifecycle()
-    val currentBio by viewModel.bio.collectAsStateWithLifecycle()
-    val currentImageUri by viewModel.imageUri.collectAsStateWithLifecycle()
+) {
 
+    val prefs by viewModel.userPreferences.collectAsStateWithLifecycle()
+
+    // ── Estados de control de UI ──────────────────────────────────────────
     var isEditing by remember { mutableStateOf(false) }
+    var isViewerOpen by remember { mutableStateOf(false) }
+    var showSheet by remember { mutableStateOf(false) }
+    var showEditDialog by remember { mutableStateOf(false) }
+    var selectedUriForEdit by remember { mutableStateOf<String?>(null) }
 
-    var tempName by remember(currentName) { mutableStateOf(currentName) }
-    var tempBio by remember(currentBio) { mutableStateOf(currentBio) }
-    var tempImageUri by remember(currentImageUri) { mutableStateOf(currentImageUri) }
+    // ── Estados temporales (Borrador) ─────────────────────────────────────
+    var tempName by remember(prefs) { mutableStateOf(prefs.name) }
+    var tempBio by remember(prefs) { mutableStateOf(prefs.bio) }
+    var tempImageUri by remember(prefs) { mutableStateOf(prefs.imageUri) }
+    var tempX by remember(prefs) { mutableFloatStateOf(prefs.centerX) }
+    var tempY by remember(prefs) { mutableFloatStateOf(prefs.centerY) }
+    var tempZoom by remember(prefs) { mutableFloatStateOf(prefs.zoom) }
+
+    var imageSize by remember { mutableStateOf(Size.Zero) }
 
     val context = LocalContext.current
     val focusManager = LocalFocusManager.current
 
+    // ── Lógica de Selección de Imagen ─────────────────────────────────────
     val photoPickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickVisualMedia(),
         onResult = { uri ->
@@ -80,15 +105,14 @@ fun AccountScreen(
                 context.contentResolver.takePersistableUriPermission(
                     it, Intent.FLAG_GRANT_READ_URI_PERMISSION
                 )
-                tempImageUri = it.toString()
+                selectedUriForEdit = it.toString()
+                showEditDialog = true
             }
         }
     )
 
     LaunchedEffect(Unit) {
-        repeat(2) {
-            withFrameNanos { }
-        }
+        repeat(2) { withFrameNanos { } }
         onRendered()
     }
 
@@ -96,61 +120,61 @@ fun AccountScreen(
         modifier = Modifier
             .fillMaxSize()
             .pointerInput(Unit) {
-                detectTapGestures(onTap = {
-                    focusManager.clearFocus()
-                })
+                detectTapGestures(onTap = { focusManager.clearFocus() })
             },
         color = BackgroundColor
     ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Foto de perfil circular
+            // ── Visualizador de Imagen Local ────────────────────────────────
             Box(contentAlignment = Alignment.BottomEnd) {
-                Surface(
+                BoxWithConstraints(
                     modifier = Modifier
                         .size(120.dp)
-                        .clickable(enabled = isEditing) {
-                            photoPickerLauncher.launch(
-                                PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
-                            )
-                        },
-                    shape = CircleShape,
-                    color = AccentSecondary,
-                    shadowElevation = 4.dp
+                        .clip(CircleShape)
+                        .background(SurfaceVariant.copy(alpha = 0.2f))
+                        .clickable { if (isEditing) showSheet = true else isViewerOpen = true },
+                    contentAlignment = Alignment.Center
                 ) {
+                    val viewSize = constraints.maxWidth.toFloat()
+
                     if (tempImageUri != null) {
                         AsyncImage(
                             model = tempImageUri,
-                            contentDescription = "Foto de perfil",
-                            modifier = Modifier.fillMaxSize(),
-                            contentScale = ContentScale.Crop
+                            contentDescription = null,
+                            onSuccess = { state ->
+                                imageSize = Size(
+                                    state.painter.intrinsicSize.width,
+                                    state.painter.intrinsicSize.height
+                                )
+                            },
+                            modifier = Modifier
+                                .wrapContentSize(unbounded = true, align = Alignment.TopStart)
+                                .graphicsLayer {
+                                    if (imageSize != Size.Zero && viewSize > 0f) {
+                                        val baseDim = minOf(imageSize.width, imageSize.height)
+
+                                        val finalScale = (viewSize / baseDim) * tempZoom
+
+                                        scaleX = finalScale
+                                        scaleY = finalScale
+
+                                        translationX = (viewSize / 2f) - (tempX * imageSize.width * finalScale)
+                                        translationY = (viewSize / 2f) - (tempY * imageSize.height * finalScale)
+
+                                        transformOrigin = TransformOrigin(0f, 0f)
+                                    }
+                                },
+                            contentScale = ContentScale.None
                         )
                     } else {
+                        // Fallback solo cuando genuinamente no hay imagen
                         Icon(
                             painter = painterResource(R.drawable.account),
                             contentDescription = null,
-                            modifier = Modifier.padding(24.dp),
-                            tint = OnAccentSecondary
-                        )
-                    }
-                }
-
-                // Indicador visual de que se puede editar la foto
-                if (isEditing) {
-                    Surface(
-                        modifier = Modifier.size(32.dp),
-                        shape = CircleShape,
-                        color = AccentSecondary.copy(alpha = 0.3f),
-                        shadowElevation = 2.dp
-                    ) {
-                        Icon(
-                            painter = painterResource(R.drawable.edit),
-                            contentDescription = null,
-                            modifier = Modifier.padding(6.dp),
+                            modifier = Modifier.fillMaxSize(0.5f),
                             tint = OnAccentSecondary
                         )
                     }
@@ -159,60 +183,76 @@ fun AccountScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Nombre del usuario
-            if (isEditing) {
+            // ── Nombre / Bio ────────────────────────────────────────────────
+            if (isEditing) { // Modo de edición
+
+                // -- Nombre --
                 OutlinedTextField(
                     value = tempName,
                     onValueChange = { tempName = it },
-                    label = { Text("Nombre") },
+                    label = { Text(stringResource(R.string.name)) },
                     singleLine = true,
                     modifier = Modifier
                         .padding(horizontal = 24.dp)
                         .fillMaxWidth(),
-                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                    keyboardOptions = KeyboardOptions.Default.copy(
+                        imeAction = ImeAction.Done,
+                        keyboardType = KeyboardType.Text,
+                        capitalization = KeyboardCapitalization.Words
+                    ),
                     keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() })
                 )
+
                 Spacer(modifier = Modifier.height(8.dp))
+
+                // -- Bio --
                 OutlinedTextField(
                     value = tempBio,
                     onValueChange = { tempBio = it },
-                    label = { Text("Descripción") },
+                    label = { Text(stringResource(R.string.bio)) },
                     modifier = Modifier
                         .padding(horizontal = 24.dp)
                         .fillMaxWidth(),
-                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                    keyboardOptions = KeyboardOptions.Default.copy(
+                        imeAction = ImeAction.Done,
+                        keyboardType = KeyboardType.Text,
+                        capitalization = KeyboardCapitalization.Sentences
+                    ),
                     keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() })
                 )
-            } else {
+
+            } else { // Modo de visualización
+
                 Text(
-                    text = currentName,
+                    text = tempName,
                     style = MaterialTheme.typography.bodyLarge,
                     textAlign = TextAlign.Center,
                     modifier = Modifier.padding(horizontal = 24.dp)
                 )
+
                 Spacer(modifier = Modifier.height(8.dp))
+
                 Text(
-                    text = currentBio,
+                    text = tempBio,
                     modifier = Modifier
                         .padding(24.dp)
                         .fillMaxWidth(),
                     style = MaterialTheme.typography.bodyMedium
                 )
+
             }
 
             Spacer(modifier = Modifier.weight(1f))
 
+            // ── Barra de Acciones ──────────────────────────────────────────
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(24.dp),
+                modifier = Modifier.fillMaxWidth().padding(24.dp),
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
                 if (isEditing) {
-                    // -- BOTON CANCELAR --
+                    // -- Boton Cancelar --
                     Button(
                         onClick = {
-                            tempImageUri = currentImageUri
                             isEditing = false
                             focusManager.clearFocus()
                         },
@@ -221,20 +261,20 @@ fun AccountScreen(
                             contentColor = OnSurfacePrimary
                         ),
                         modifier = Modifier.weight(1f).padding(end = 8.dp)
-                    ) {
-                        Text(
-                            stringResource(R.string.cancel),
-                            style = MaterialTheme.typography.bodyMedium
-                        )
-                    }
+                    ) { Text(stringResource(R.string.cancel)) }
 
-                    // -- BOTON GUARDAR --
+                    // -- Boton Guardar --
                     Button(
                         onClick = {
                             viewModel.updateProfile(
-                                newName = tempName,
-                                newBio = tempBio,
-                                newImageUri = tempImageUri
+                                UserPreferences(
+                                    name = tempName,
+                                    bio = tempBio,
+                                    imageUri = tempImageUri,
+                                    centerX = tempX,
+                                    centerY = tempY,
+                                    zoom = tempZoom
+                                )
                             )
                             isEditing = false
                             focusManager.clearFocus()
@@ -244,17 +284,10 @@ fun AccountScreen(
                             contentColor = OnAccentSecondary
                         ),
                         modifier = Modifier.weight(1f).padding(start = 8.dp)
-                    ) {
-                        Text(
-                            "Guardar",
-                            style = MaterialTheme.typography.bodyMedium
-                        )
-                    }
+                    ) { Text(stringResource(R.string.save)) }
                 } else {
                     Button(
-                        onClick = {
-                            isEditing = true
-                        },
+                        onClick = { isEditing = true },
                         modifier = Modifier.fillMaxWidth(),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = AccentSecondary,
@@ -263,10 +296,54 @@ fun AccountScreen(
                     ) {
                         Icon(painterResource(R.drawable.edit), null)
                         Spacer(Modifier.width(8.dp))
-                        Text("Editar Perfil")
+                        Text(stringResource(R.string.edit) + " " + stringResource(R.string.profile))
                     }
                 }
             }
         }
+    }
+
+    // ── Overlays ────────────────────────────────────────────────────────────
+    if (isViewerOpen) {
+        FullScreenImageRow(
+            imageUri = tempImageUri,
+            onDismiss = { isViewerOpen = false }
+        )
+    }
+    // Dentro de AccountScreen...
+    if (showSheet) {
+        ProfileImageSheet(
+            hasImage = tempImageUri != null,
+            onDismiss = { showSheet = false },
+            onPickImage = {
+                showSheet = false
+                photoPickerLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+            },
+            onEditExisting = {
+                showSheet = false
+                selectedUriForEdit = tempImageUri // Pasamos la URI actual
+                showEditDialog = true
+            },
+            onRemoveImage = {
+                showSheet = false
+                tempImageUri = null
+                tempX = 0.5f; tempY = 0.5f; tempZoom = 1f
+            }
+        )
+    }
+
+    if (showEditDialog) {
+        ImageEditDialog(
+            imageUri = selectedUriForEdit,
+            initialX = tempX,
+            initialY = tempY,
+            initialZoom = tempZoom,
+            onDismiss = { showEditDialog = false; selectedUriForEdit = null },
+            onConfirm = { uri, x, y, z ->
+                tempImageUri = uri
+                tempX = x; tempY = y; tempZoom = z
+                showEditDialog = false; selectedUriForEdit = null
+            }
+        )
     }
 }

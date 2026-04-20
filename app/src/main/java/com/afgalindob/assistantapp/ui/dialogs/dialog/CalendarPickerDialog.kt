@@ -1,4 +1,4 @@
-package com.afgalindob.assistantapp.ui.dialogs
+package com.afgalindob.assistantapp.ui.dialogs.dialog
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
