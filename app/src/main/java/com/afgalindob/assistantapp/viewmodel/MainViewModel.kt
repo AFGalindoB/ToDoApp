@@ -1,9 +1,12 @@
 package com.afgalindob.assistantapp.viewmodel
 
 import android.util.Log
+import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.os.LocaleListCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.afgalindob.assistantapp.data.container.AppContainer
+import com.afgalindob.assistantapp.utils.LanguageUtils
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -34,6 +37,13 @@ class MainViewModel(private val container: AppContainer) : ViewModel() {
 
                 container.taskRepository.getTasks(true, now).firstOrNull()
                 Log.d(TAG, "Base de datos caliente y lista para peticiones.")
+
+                launch {
+                    container.userRepository.languageData.collect { langCode ->
+                        Log.d(TAG, "Aplicando idioma configurado: $langCode")
+                        LanguageUtils.applyAppLanguage(langCode)
+                    }
+                }
             } catch (e: Exception) {
                 Log.e(TAG, "Error crítico durante el arranque en frío: ${e.message}", e)
             } finally {

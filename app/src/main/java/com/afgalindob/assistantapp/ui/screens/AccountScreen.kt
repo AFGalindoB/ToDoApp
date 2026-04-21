@@ -1,3 +1,5 @@
+@file:Suppress("AssignedValueIsNeverRead")
+
 package com.afgalindob.assistantapp.ui.screens
 
 import android.content.Intent
@@ -16,6 +18,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -25,6 +28,7 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -54,9 +58,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.afgalindob.assistantapp.R
 import com.afgalindob.assistantapp.data.local.preferences.UserPreferences
-import com.afgalindob.assistantapp.ui.components.ProfileImageSheet
+import com.afgalindob.assistantapp.ui.components.bottomsheet.ProfileImageSheet
 import com.afgalindob.assistantapp.ui.dialogs.dialog.FullScreenImageRow
-import com.afgalindob.assistantapp.ui.dialogs.dialog.ImageEditDialog
 import com.afgalindob.assistantapp.ui.theme.AccentSecondary
 import com.afgalindob.assistantapp.ui.theme.BackgroundColor
 import com.afgalindob.assistantapp.ui.theme.OnAccentSecondary
@@ -68,6 +71,9 @@ import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import coil.compose.AsyncImage
+import com.afgalindob.assistantapp.ui.components.bottomsheet.LanguageSelectorSheet
+import com.afgalindob.assistantapp.ui.dialogs.dialog.AdjustProfileImage
+import com.afgalindob.assistantapp.utils.LanguageUtils
 
 @Composable
 fun AccountScreen(
@@ -80,7 +86,8 @@ fun AccountScreen(
     // ── Estados de control de UI ──────────────────────────────────────────
     var isEditing by remember { mutableStateOf(false) }
     var isViewerOpen by remember { mutableStateOf(false) }
-    var showSheet by remember { mutableStateOf(false) }
+    var showEditImageSheet by remember { mutableStateOf(false) }
+    var showEditLanguageSheet by remember { mutableStateOf(false) }
     var showEditDialog by remember { mutableStateOf(false) }
     var selectedUriForEdit by remember { mutableStateOf<String?>(null) }
 
@@ -135,7 +142,10 @@ fun AccountScreen(
                         .size(120.dp)
                         .clip(CircleShape)
                         .background(SurfaceVariant.copy(alpha = 0.2f))
-                        .clickable { if (isEditing) showSheet = true else isViewerOpen = true },
+                        .clickable {
+                            if (isEditing) showEditImageSheet = true
+                            else isViewerOpen = true
+                        },
                     contentAlignment = Alignment.Center
                 ) {
                     val viewSize = constraints.maxWidth.toFloat()
@@ -179,6 +189,25 @@ fun AccountScreen(
                         )
                     }
                 }
+                if (isEditing) {
+                    Box(
+                        modifier = Modifier
+                            .size(32.dp)
+                            .clip(CircleShape)
+                            .background(AccentSecondary)
+                            .clickable { showEditImageSheet = true }
+                            .padding(8.dp)
+                        ,
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            painter = painterResource(R.drawable.edit),
+                            contentDescription = null,
+                            modifier = Modifier.fillMaxSize(),
+                            tint = OnAccentSecondary
+                        )
+                    }
+                }
             }
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -212,7 +241,8 @@ fun AccountScreen(
                     label = { Text(stringResource(R.string.bio)) },
                     modifier = Modifier
                         .padding(horizontal = 24.dp)
-                        .fillMaxWidth(),
+                        .fillMaxWidth()
+                        .heightIn(min = 120.dp),
                     keyboardOptions = KeyboardOptions.Default.copy(
                         imeAction = ImeAction.Done,
                         keyboardType = KeyboardType.Text,
@@ -236,10 +266,56 @@ fun AccountScreen(
                     text = tempBio,
                     modifier = Modifier
                         .padding(24.dp)
-                        .fillMaxWidth(),
+                        .fillMaxWidth()
+                        .heightIn(min = 120.dp)
+                    ,
                     style = MaterialTheme.typography.bodyMedium
                 )
 
+            }
+
+            if (!isEditing) {
+                Column {
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            stringResource(R.string.accessibility),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = SurfaceVariant,
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        HorizontalDivider(
+                            color = SurfaceVariant,
+                            thickness = 1.dp,
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 24.dp)
+                            .clickable { showEditLanguageSheet = true }
+                            .padding(12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            painter = painterResource(R.drawable.language),
+                            contentDescription = null,
+                            tint = SurfaceVariant
+                        )
+
+                        Spacer(modifier = Modifier.width(8.dp))
+
+                        Text(
+                            text = stringResource(R.string.language) + ": " + prefs.language.uppercase(),
+                            style = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
+                }
             }
 
             Spacer(modifier = Modifier.weight(1f))
@@ -253,6 +329,12 @@ fun AccountScreen(
                     // -- Boton Cancelar --
                     Button(
                         onClick = {
+                            tempName = prefs.name
+                            tempBio = prefs.bio
+                            tempImageUri = prefs.imageUri
+                            tempX = prefs.centerX
+                            tempY = prefs.centerY
+                            tempZoom = prefs.zoom
                             isEditing = false
                             focusManager.clearFocus()
                         },
@@ -310,30 +392,30 @@ fun AccountScreen(
             onDismiss = { isViewerOpen = false }
         )
     }
-    // Dentro de AccountScreen...
-    if (showSheet) {
-        ProfileImageSheet(
-            hasImage = tempImageUri != null,
-            onDismiss = { showSheet = false },
-            onPickImage = {
-                showSheet = false
-                photoPickerLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
-            },
-            onEditExisting = {
-                showSheet = false
-                selectedUriForEdit = tempImageUri // Pasamos la URI actual
-                showEditDialog = true
-            },
-            onRemoveImage = {
-                showSheet = false
-                tempImageUri = null
-                tempX = 0.5f; tempY = 0.5f; tempZoom = 1f
-            }
-        )
-    }
+
+    // Menu Editar Foto
+    ProfileImageSheet(
+        showSheet = showEditImageSheet,
+        hasImage = tempImageUri != null,
+        onDismiss = { showEditImageSheet = false },
+        onPickImage = {
+            showEditImageSheet = false
+            photoPickerLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+        },
+        onEditExisting = {
+            showEditImageSheet = false
+            selectedUriForEdit = tempImageUri // Pasamos la URI actual
+            showEditDialog = true
+        },
+        onRemoveImage = {
+            showEditImageSheet = false
+            tempImageUri = null
+            tempX = 0.5f; tempY = 0.5f; tempZoom = 1f
+        }
+    )
 
     if (showEditDialog) {
-        ImageEditDialog(
+        AdjustProfileImage( // Ajustar Imagen
             imageUri = selectedUriForEdit,
             initialX = tempX,
             initialY = tempY,
@@ -343,6 +425,16 @@ fun AccountScreen(
                 tempImageUri = uri
                 tempX = x; tempY = y; tempZoom = z
                 showEditDialog = false; selectedUriForEdit = null
+            }
+        )
+    }
+
+    if (showEditLanguageSheet) {
+        LanguageSelectorSheet(
+            onDismiss = { showEditLanguageSheet = false },
+            onLanguageSelected = {
+                viewModel.updateLanguage(it)
+                showEditLanguageSheet = false
             }
         )
     }

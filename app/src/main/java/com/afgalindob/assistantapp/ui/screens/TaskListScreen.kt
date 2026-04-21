@@ -52,7 +52,7 @@ import com.afgalindob.assistantapp.navigation.FormMode
 import com.afgalindob.assistantapp.ui.components.EntitySnackbar
 import com.afgalindob.assistantapp.ui.components.SectionHeader
 import com.afgalindob.assistantapp.ui.components.cards.TaskEvent
-import com.afgalindob.assistantapp.ui.components.FilterBottomSheet
+import com.afgalindob.assistantapp.ui.components.bottomsheet.FilterBottomSheet
 import com.afgalindob.assistantapp.ui.theme.AccentPrimary
 import com.afgalindob.assistantapp.ui.theme.AccentSecondary
 import com.afgalindob.assistantapp.ui.theme.BackgroundColor

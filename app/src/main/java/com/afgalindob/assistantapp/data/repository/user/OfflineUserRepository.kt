@@ -9,8 +9,13 @@ class OfflineUserRepository(
 ) : UserRepository {
 
     override val userData: Flow<UserPreferences> = preferencesManager.userPreferencesFlow
+    override val languageData: Flow<String> = preferencesManager.languageFlow
 
     override suspend fun saveUser(userPrefs: UserPreferences) {
         preferencesManager.saveUserPreferences(userPrefs)
+    }
+
+    override suspend fun updateLanguage(languageCode: String) {
+        preferencesManager.updateLanguage(languageCode)
     }
 }

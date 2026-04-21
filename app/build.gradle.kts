@@ -99,6 +99,7 @@ dependencies {
     implementation(libs.androidx.compose.animation)
     implementation(libs.androidx.runtime)
     implementation(libs.androidx.compose.foundation.layout)
+    implementation(libs.androidx.appcompat)
     "baselineProfile"(project(":baselineprofile"))
     ksp("androidx.room:room-compiler:2.6.1")
 

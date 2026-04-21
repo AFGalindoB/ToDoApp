@@ -1,4 +1,4 @@
-package com.afgalindob.assistantapp.ui.components
+package com.afgalindob.assistantapp.ui.components.bottomsheet
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row

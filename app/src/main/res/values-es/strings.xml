@@ -47,4 +47,13 @@
     <string name="profile">Perfil</string>
     <string name="name">Nombre</string>
     <string name="bio">Bio</string>
+    <string name="accept">Aceptar</string>
+    <string name="crop_dialog">Ajusta la posición y el zoom</string>
+    <string name="profilephoto">Foto de Perfil</string>
+    <string name="select_image">Seleccionar Imagen desde la galería</string>
+    <string name="adjust_image">Ajustar Imagen</string>
+    <string name="remove_image">Quitar Imagen</string>
+    <string name="select_language">Seleccionar Idioma</string>
+    <string name="language">Idioma</string>
+    <string name="accessibility">Accesibilidad</string>
 </resources>

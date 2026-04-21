@@ -26,4 +26,10 @@ class SettingsViewModel(
             userRepository.saveUser(preferences)
         }
     }
+
+    fun updateLanguage(languageCode: String) {
+        viewModelScope.launch {
+            userRepository.updateLanguage(languageCode)
+        }
+    }
 }

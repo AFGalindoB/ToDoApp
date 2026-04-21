@@ -27,24 +27,29 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.geometry.toRect
+import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import coil.compose.AsyncImage
-import com.afgalindob.assistantapp.ui.theme.AccentSecondary
+import com.afgalindob.assistantapp.R
+import com.afgalindob.assistantapp.ui.theme.AccentPrimary
 import com.afgalindob.assistantapp.ui.theme.BackgroundColor
 import com.afgalindob.assistantapp.ui.theme.OnSurfacePrimary
 
 @Composable
-fun ImageEditDialog(
+fun AdjustProfileImage(
     imageUri: String?,
-    initialX: Float = 0.5f, // Pasamos los valores actuales para re-editar
+    initialX: Float = 0.5f,
     initialY: Float = 0.5f,
     initialZoom: Float = 1f,
     onDismiss: () -> Unit,
@@ -54,7 +59,6 @@ fun ImageEditDialog(
     var centerY by remember { mutableFloatStateOf(initialY) }
     var zoom by remember { mutableFloatStateOf(initialZoom) }
 
-    // Almacenamos el tamaño intrínseco de la imagen para los cálculos de gestos
     var imageSize by remember { mutableStateOf(Size.Zero) }
 
     if (imageUri != null) {
@@ -70,10 +74,9 @@ fun ImageEditDialog(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        TextButton(onClick = onDismiss) { Text("Cancelar", color = OnSurfacePrimary) }
-                        Text("Encuadrar", style = MaterialTheme.typography.titleLarge, color = OnSurfacePrimary)
+                        TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel), color = OnSurfacePrimary) }
                         TextButton(onClick = { onConfirm(imageUri, centerX, centerY, zoom) }) {
-                            Text("Aceptar", color = AccentSecondary)
+                            Text(stringResource(R.string.accept), color = AccentPrimary)
                         }
                     }
 
@@ -87,7 +90,6 @@ fun ImageEditDialog(
                             .clipToBounds()
                             .background(Color.Black)
                             .pointerInput(imageSize) {
-                                // Importante: Solo habilitamos gestos cuando conocemos el tamaño de la imagen
                                 if (imageSize == Size.Zero) return@pointerInput
 
                                 detectTransformGestures { _, pan, gestureZoom, _ ->
@@ -138,23 +140,32 @@ fun ImageEditDialog(
                             contentScale = ContentScale.None
                         )
 
-                        // --- MÁSCARA DE PREVISUALIZACIÓN (Opcional) ---
-                        // Aquí podrías dibujar un círculo semi-transparente para ayudar al usuario
+                        // --- MÁSCARA DE PREVISUALIZACIÓN ---
                         Canvas(modifier = Modifier.fillMaxSize()) {
                             val circleRadius = size.minDimension / 2f
+                            drawContext.canvas.saveLayer(size.toRect(), Paint())
+                            drawRect(color = Color.Black.copy(alpha = 0.6f))
                             drawCircle(
-                                color = Color.White.copy(alpha = 0.2f),
+                                color = Color.Transparent,
                                 radius = circleRadius,
                                 center = center,
-                                style = Stroke(width = 2.dp.toPx())
+                                blendMode = BlendMode.Clear
                             )
+                            drawCircle(
+                                color = Color.White.copy(alpha = 0.3f),
+                                radius = circleRadius,
+                                center = center,
+                                style = Stroke(width = 1.dp.toPx())
+                            )
+
+                            drawContext.canvas.restore()
                         }
                     }
 
                     Spacer(modifier = Modifier.weight(1f))
 
                     Text(
-                        text = "Arrastra para desplazar • Pellizca para zoom",
+                        text = stringResource(R.string.crop_dialog),
                         style = MaterialTheme.typography.bodySmall,
                         modifier = Modifier.padding(24.dp).align(Alignment.CenterHorizontally),
                         color = OnSurfacePrimary.copy(alpha = 0.6f)

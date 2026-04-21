@@ -5,7 +5,10 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.floatPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import com.afgalindob.assistantapp.utils.LanguageUtils
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 
 private val Context.dataStore by preferencesDataStore(name = "user_settings")
@@ -18,6 +21,7 @@ class UserPreferencesManager(private val context: Context) {
         private val OFFSET_X_KEY = floatPreferencesKey("user_image_offset_x")
         private val OFFSET_Y_KEY = floatPreferencesKey("user_image_offset_y")
         private val ZOOM_KEY = floatPreferencesKey("user_image_zoom")
+        private val LANGUAGE_KEY = stringPreferencesKey("user_language")
     }
 
     val userPreferencesFlow: Flow<UserPreferences> = context.dataStore.data.map { prefs ->
@@ -25,11 +29,18 @@ class UserPreferencesManager(private val context: Context) {
             name = prefs[NAME_KEY] ?: "Usuario",
             bio = prefs[BIO_KEY] ?: "Sin descripción",
             imageUri = prefs[IMAGE_KEY],
-            centerX = prefs[OFFSET_X_KEY] ?: 0f,
-            centerY = prefs[OFFSET_Y_KEY] ?: 0f,
-            zoom = prefs[ZOOM_KEY] ?: 1f
+            centerX = prefs[OFFSET_X_KEY] ?: 0.5f,
+            centerY = prefs[OFFSET_Y_KEY] ?: 0.5f,
+            zoom = prefs[ZOOM_KEY] ?: 1f,
+            language = prefs[LANGUAGE_KEY] ?: LanguageUtils.getSystemLanguageCode()
         )
     }
+
+    val languageFlow: Flow<String> = context.dataStore.data
+        .map { prefs ->
+            prefs[LANGUAGE_KEY] ?: LanguageUtils.getSystemLanguageCode()
+        }
+        .distinctUntilChanged()
 
     suspend fun saveUserPreferences(userPrefs: UserPreferences) {
         context.dataStore.edit { prefs ->
@@ -44,6 +55,12 @@ class UserPreferencesManager(private val context: Context) {
             } else {
                 prefs.remove(IMAGE_KEY)
             }
+        }
+    }
+
+    suspend fun updateLanguage(languageCode: String) {
+        context.dataStore.edit { prefs ->
+            prefs[LANGUAGE_KEY] = LanguageUtils.normalizeLanguageCode(languageCode)
         }
     }
 }

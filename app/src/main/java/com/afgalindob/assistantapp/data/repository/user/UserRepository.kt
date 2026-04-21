@@ -5,5 +5,7 @@ import kotlinx.coroutines.flow.Flow
 
 interface UserRepository {
     val userData: Flow<UserPreferences>
+    val languageData: Flow<String>
     suspend fun saveUser(userPrefs: UserPreferences)
+    suspend fun updateLanguage(languageCode: String)
 }
