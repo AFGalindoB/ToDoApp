@@ -100,6 +100,7 @@ dependencies {
     implementation(libs.androidx.runtime)
     implementation(libs.androidx.compose.foundation.layout)
     implementation(libs.androidx.appcompat)
+    implementation(libs.androidx.compose.remote.creation.core)
     "baselineProfile"(project(":baselineprofile"))
     ksp("androidx.room:room-compiler:2.6.1")
 

@@ -64,7 +64,7 @@ enum class AppTransitionState {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AssistantApp(container: AppContainer, isAppReady: Boolean) {
+fun AssistantApp(container: AppContainer) {
     val navController = rememberNavController()
     val scope = rememberCoroutineScope()
 
@@ -77,7 +77,6 @@ fun AssistantApp(container: AppContainer, isAppReady: Boolean) {
     val trashViewModel: TrashViewModel = viewModel {
         TrashViewModel(container.trashRepository)
     }
-
     val settingsViewModel: SettingsViewModel = viewModel {
         SettingsViewModel(container.userRepository)
     }
@@ -205,7 +204,6 @@ fun AssistantApp(container: AppContainer, isAppReady: Boolean) {
                         composable<TaskList> {
                             TaskListScreen(
                                 viewModel = taskViewModel,
-                                isAppReady = isAppReady,
                                 onRendered = { isContentReady = true },
                                 updateTopBar = { topBarActions = it }
                             )

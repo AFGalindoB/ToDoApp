@@ -55,4 +55,5 @@
     <string name="select_language">Select Language</string>
     <string name="language">Language</string>
     <string name="accessibility">Accessibility</string>
+    <string name="loading">Loading</string>
 </resources>

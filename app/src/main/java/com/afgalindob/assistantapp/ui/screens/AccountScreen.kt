@@ -6,6 +6,13 @@ import android.content.Intent
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.SizeTransform
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -45,6 +52,7 @@ import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusManager
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
@@ -52,7 +60,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -71,9 +78,9 @@ import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import coil.compose.AsyncImage
+import com.afgalindob.assistantapp.ui.components.NoirBackground
 import com.afgalindob.assistantapp.ui.components.bottomsheet.LanguageSelectorSheet
 import com.afgalindob.assistantapp.ui.dialogs.dialog.AdjustProfileImage
-import com.afgalindob.assistantapp.utils.LanguageUtils
 
 @Composable
 fun AccountScreen(
@@ -123,13 +130,10 @@ fun AccountScreen(
         onRendered()
     }
 
-    Surface(
-        modifier = Modifier
-            .fillMaxSize()
-            .pointerInput(Unit) {
-                detectTapGestures(onTap = { focusManager.clearFocus() })
-            },
-        color = BackgroundColor
+    NoirBackground(
+        modifier = Modifier.pointerInput(Unit) {
+            detectTapGestures(onTap = { focusManager.clearFocus() })
+        }
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
 
@@ -213,108 +217,38 @@ fun AccountScreen(
             Spacer(modifier = Modifier.height(24.dp))
 
             // ── Nombre / Bio ────────────────────────────────────────────────
-            if (isEditing) { // Modo de edición
-
-                // -- Nombre --
-                OutlinedTextField(
-                    value = tempName,
-                    onValueChange = { tempName = it },
-                    label = { Text(stringResource(R.string.name)) },
-                    singleLine = true,
-                    modifier = Modifier
-                        .padding(horizontal = 24.dp)
-                        .fillMaxWidth(),
-                    keyboardOptions = KeyboardOptions.Default.copy(
-                        imeAction = ImeAction.Done,
-                        keyboardType = KeyboardType.Text,
-                        capitalization = KeyboardCapitalization.Words
-                    ),
-                    keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() })
-                )
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                // -- Bio --
-                OutlinedTextField(
-                    value = tempBio,
-                    onValueChange = { tempBio = it },
-                    label = { Text(stringResource(R.string.bio)) },
-                    modifier = Modifier
-                        .padding(horizontal = 24.dp)
-                        .fillMaxWidth()
-                        .heightIn(min = 120.dp),
-                    keyboardOptions = KeyboardOptions.Default.copy(
-                        imeAction = ImeAction.Done,
-                        keyboardType = KeyboardType.Text,
-                        capitalization = KeyboardCapitalization.Sentences
-                    ),
-                    keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() })
-                )
-
-            } else { // Modo de visualización
-
-                Text(
-                    text = tempName,
-                    style = MaterialTheme.typography.bodyLarge,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(horizontal = 24.dp)
-                )
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                Text(
-                    text = tempBio,
-                    modifier = Modifier
-                        .padding(24.dp)
-                        .fillMaxWidth()
-                        .heightIn(min = 120.dp)
-                    ,
-                    style = MaterialTheme.typography.bodyMedium
-                )
-
-            }
-
-            if (!isEditing) {
-                Column {
-                    Row(
-                        modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            stringResource(R.string.accessibility),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = SurfaceVariant,
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        HorizontalDivider(
-                            color = SurfaceVariant,
-                            thickness = 1.dp,
-                            modifier = Modifier.weight(1f)
-                        )
-                    }
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 24.dp)
-                            .clickable { showEditLanguageSheet = true }
-                            .padding(12.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            painter = painterResource(R.drawable.language),
-                            contentDescription = null,
-                            tint = SurfaceVariant
-                        )
-
-                        Spacer(modifier = Modifier.width(8.dp))
-
-                        Text(
-                            text = stringResource(R.string.language) + ": " + prefs.language.uppercase(),
-                            style = MaterialTheme.typography.bodyMedium,
-                            modifier = Modifier.weight(1f)
-                        )
-                    }
+            AnimatedContent(
+                targetState = isEditing,
+                transitionSpec = {
+                    if (targetState) {
+                        // Entra modo edición: deslizamiento de derecha a izquierda
+                        (slideInHorizontally { width -> width } + fadeIn()) togetherWith
+                                (slideOutHorizontally { width -> -width } + fadeOut())
+                    } else {
+                        // Vuelve a modo vista: deslizamiento de izquierda a derecha
+                        (slideInHorizontally { width -> -width } + fadeIn()) togetherWith
+                                (slideOutHorizontally { width -> width } + fadeOut())
+                    }.using(
+                        SizeTransform(clip = false)
+                    )
+                },
+                label = "HorizontalModeTransition"
+            ) { editing ->
+                if (editing) {
+                    EditModeContent(
+                        name = tempName,
+                        onNameChange = { tempName = it },
+                        bio = tempBio,
+                        onBioChange = { tempBio = it },
+                        focusManager = focusManager
+                    )
+                } else {
+                    ViewModeContent(
+                        name = tempName,
+                        bio = tempBio,
+                        language = prefs.language,
+                        onLanguageClick = { showEditLanguageSheet = true }
+                    )
                 }
             }
 
@@ -436,6 +370,99 @@ fun AccountScreen(
                 viewModel.updateLanguage(it)
                 showEditLanguageSheet = false
             }
+        )
+    }
+}
+
+@Composable
+private fun ViewModeContent(
+    name: String,
+    bio: String,
+    language: String,
+    onLanguageClick: () -> Unit
+) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(
+            text = name,
+            style = MaterialTheme.typography.bodyLarge,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.padding(horizontal = 24.dp)
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(
+            text = bio,
+            modifier = Modifier
+                .padding(24.dp)
+                .fillMaxWidth()
+                .heightIn(min = 120.dp),
+            style = MaterialTheme.typography.bodyMedium
+        )
+
+        // Sección Accesibilidad
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                stringResource(R.string.accessibility),
+                style = MaterialTheme.typography.bodyMedium,
+                color = SurfaceVariant,
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            HorizontalDivider(color = SurfaceVariant, thickness = 1.dp, modifier = Modifier.weight(1f))
+        }
+        Spacer(modifier = Modifier.height(8.dp))
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp)
+                .clickable { onLanguageClick() }
+                .padding(12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(painterResource(R.drawable.language), null, tint = SurfaceVariant)
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text = "${stringResource(R.string.language)}: ${language.uppercase()}",
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.weight(1f)
+            )
+        }
+    }
+}
+
+@Composable
+private fun EditModeContent(
+    name: String,
+    onNameChange: (String) -> Unit,
+    bio: String,
+    onBioChange: (String) -> Unit,
+    focusManager: FocusManager
+) {
+    Column(modifier = Modifier.padding(horizontal = 24.dp)) {
+        OutlinedTextField(
+            value = name,
+            onValueChange = onNameChange,
+            label = { Text(stringResource(R.string.name)) },
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth(),
+            keyboardOptions = KeyboardOptions.Default.copy(
+                imeAction = ImeAction.Done,
+                capitalization = KeyboardCapitalization.Words
+            ),
+            keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() })
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        OutlinedTextField(
+            value = bio,
+            onValueChange = onBioChange,
+            label = { Text(stringResource(R.string.bio)) },
+            modifier = Modifier.fillMaxWidth().heightIn(min = 120.dp),
+            keyboardOptions = KeyboardOptions.Default.copy(
+                imeAction = ImeAction.Done,
+                capitalization = KeyboardCapitalization.Sentences
+            ),
+            keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() })
         )
     }
 }

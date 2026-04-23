@@ -1,6 +1,7 @@
 package com.afgalindob.assistantapp.ui.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -32,6 +33,8 @@ import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -41,6 +44,7 @@ import com.afgalindob.assistantapp.domain.NoteDomain
 import com.afgalindob.assistantapp.domain.TaskDomain
 import com.afgalindob.assistantapp.navigation.DialogType
 import com.afgalindob.assistantapp.ui.components.EntitySnackbar
+import com.afgalindob.assistantapp.ui.components.NoirBackground
 import com.afgalindob.assistantapp.ui.components.SectionHeader
 import com.afgalindob.assistantapp.ui.components.cards.NoteCard
 import com.afgalindob.assistantapp.ui.components.cards.TaskCard
@@ -60,6 +64,8 @@ fun TrashScreen(
     viewModel: TrashViewModel,
     onRendered: () -> Unit
 ) {
+    val focusManager = LocalFocusManager.current
+
     val tasks by viewModel.deletedTasks.collectAsState()
     val notes by viewModel.deletedNotes.collectAsState()
 
@@ -76,7 +82,11 @@ fun TrashScreen(
         onRendered()
     }
 
-    Surface(modifier = Modifier.fillMaxSize(), color = BackgroundColor) {
+    NoirBackground(
+        modifier = Modifier.pointerInput(Unit) {
+            detectTapGestures(onTap = { focusManager.clearFocus() })
+        }
+    ) {
         Box(modifier = Modifier.fillMaxSize()){
             LazyColumn(modifier = Modifier.fillMaxSize()){
 

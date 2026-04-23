@@ -18,7 +18,6 @@ import kotlinx.coroutines.yield
 class MainViewModel(private val container: AppContainer) : ViewModel() {
     private val _isAppReady = MutableStateFlow(false)
     val isAppReady = _isAppReady.asStateFlow()
-
     private val TAG = "MainViewModel_Startup"
 
     init {
@@ -38,20 +37,12 @@ class MainViewModel(private val container: AppContainer) : ViewModel() {
                 container.taskRepository.getTasks(true, now).firstOrNull()
                 Log.d(TAG, "Base de datos caliente y lista para peticiones.")
 
-                launch {
-                    container.userRepository.languageData.collect { langCode ->
-                        Log.d(TAG, "Aplicando idioma configurado: $langCode")
-                        LanguageUtils.applyAppLanguage(langCode)
-                    }
-                }
             } catch (e: Exception) {
                 Log.e(TAG, "Error crítico durante el arranque en frío: ${e.message}", e)
             } finally {
                 val endTime = System.currentTimeMillis()
                 Log.i(TAG, "Arranque finalizado en ${endTime - startTime}ms. Liberando Splash Screen.")
 
-                // Añadimos un pequeño delay y yield para asegurar que el sistema procese el inicio
-                // antes de reportar que la app está lista, evitando condiciones de carrera en benchmarks.
                 yield()
                 delay(200)
                 _isAppReady.value = true

@@ -2,6 +2,7 @@ package com.afgalindob.assistantapp.ui.screens
 
 import androidx.activity.compose.ReportDrawnWhen
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.RowScope
@@ -45,11 +46,14 @@ import androidx.compose.runtime.withFrameNanos
 import kotlinx.coroutines.delay
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.style.TextAlign
 import com.afgalindob.assistantapp.domain.TaskDomain
 import com.afgalindob.assistantapp.domain.validation.ValidationError
 import com.afgalindob.assistantapp.navigation.FormMode
 import com.afgalindob.assistantapp.ui.components.EntitySnackbar
+import com.afgalindob.assistantapp.ui.components.NoirBackground
 import com.afgalindob.assistantapp.ui.components.SectionHeader
 import com.afgalindob.assistantapp.ui.components.cards.TaskEvent
 import com.afgalindob.assistantapp.ui.components.bottomsheet.FilterBottomSheet
@@ -63,7 +67,6 @@ import com.afgalindob.assistantapp.ui.theme.OnSurfacePrimary
 @Composable
 fun TaskListScreen(
     viewModel: TaskViewModel,
-    isAppReady: Boolean,
     onRendered: () -> Unit,
     updateTopBar: (@Composable RowScope.() -> Unit) -> Unit
 ){
@@ -87,7 +90,7 @@ fun TaskListScreen(
     }
     var hasFinishedDrawing by remember { mutableStateOf(false) }
 
-    ReportDrawnWhen { hasFinishedDrawing && isAppReady }
+    ReportDrawnWhen { hasFinishedDrawing }
 
     LaunchedEffect(Unit) {
         // Incrementamos la espera para evitar condiciones de carrera en el Benchmark
@@ -99,6 +102,8 @@ fun TaskListScreen(
 
         hasFinishedDrawing = true
     }
+
+    val focusManager = LocalFocusManager.current
 
     val tasks by viewModel.tasksDomain.collectAsState()
     val tasksBySection by viewModel.tasksBySection.collectAsState()
@@ -128,7 +133,11 @@ fun TaskListScreen(
         }
     }
 
-    Surface(modifier = Modifier.fillMaxSize(), color = BackgroundColor) {
+    NoirBackground(
+        modifier = Modifier.pointerInput(Unit) {
+            detectTapGestures(onTap = { focusManager.clearFocus() })
+        }
+    ) {
 
         Box(modifier = Modifier.fillMaxSize()){
             Column {
