@@ -32,4 +32,10 @@ class SettingsViewModel(
             userRepository.updateLanguage(languageCode)
         }
     }
+
+    fun updateReminderTime(time: String) {
+        viewModelScope.launch {
+            userRepository.updateReminderTime(time)
+        }
+    }
 }

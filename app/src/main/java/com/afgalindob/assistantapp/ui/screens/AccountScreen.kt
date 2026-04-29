@@ -39,7 +39,6 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -68,7 +67,6 @@ import com.afgalindob.assistantapp.data.local.preferences.UserPreferences
 import com.afgalindob.assistantapp.ui.components.bottomsheet.ProfileImageSheet
 import com.afgalindob.assistantapp.ui.dialogs.dialog.FullScreenImageRow
 import com.afgalindob.assistantapp.ui.theme.AccentSecondary
-import com.afgalindob.assistantapp.ui.theme.BackgroundColor
 import com.afgalindob.assistantapp.ui.theme.OnAccentSecondary
 import com.afgalindob.assistantapp.ui.theme.OnSurfacePrimary
 import com.afgalindob.assistantapp.ui.theme.SurfaceVariant
@@ -80,6 +78,7 @@ import androidx.compose.ui.layout.ContentScale
 import coil.compose.AsyncImage
 import com.afgalindob.assistantapp.ui.components.NoirBackground
 import com.afgalindob.assistantapp.ui.components.bottomsheet.LanguageSelectorSheet
+import com.afgalindob.assistantapp.ui.components.bottomsheet.TimeReminderSheet
 import com.afgalindob.assistantapp.ui.dialogs.dialog.AdjustProfileImage
 
 @Composable
@@ -97,6 +96,7 @@ fun AccountScreen(
     var showEditLanguageSheet by remember { mutableStateOf(false) }
     var showEditDialog by remember { mutableStateOf(false) }
     var selectedUriForEdit by remember { mutableStateOf<String?>(null) }
+    var showTimePicker by remember { mutableStateOf(false) }
 
     // ── Estados temporales (Borrador) ─────────────────────────────────────
     var tempName by remember(prefs) { mutableStateOf(prefs.name) }
@@ -105,6 +105,7 @@ fun AccountScreen(
     var tempX by remember(prefs) { mutableFloatStateOf(prefs.centerX) }
     var tempY by remember(prefs) { mutableFloatStateOf(prefs.centerY) }
     var tempZoom by remember(prefs) { mutableFloatStateOf(prefs.zoom) }
+    var tempReminderTime by remember(prefs) { mutableStateOf(prefs.reminderTime) }
 
     var imageSize by remember { mutableStateOf(Size.Zero) }
 
@@ -247,6 +248,8 @@ fun AccountScreen(
                         name = tempName,
                         bio = tempBio,
                         language = prefs.language,
+                        reminderTime = tempReminderTime,
+                        onAlarmClick = { showTimePicker = true },
                         onLanguageClick = { showEditLanguageSheet = true }
                     )
                 }
@@ -372,6 +375,18 @@ fun AccountScreen(
             }
         )
     }
+
+    if (showTimePicker) {
+        TimeReminderSheet(
+            initialTime = tempReminderTime,
+            onDismiss = { showTimePicker = false },
+            onTimeSelected = {
+                viewModel.updateReminderTime(it)
+                tempReminderTime = it
+                showTimePicker = false
+            }
+        )
+    }
 }
 
 @Composable
@@ -379,7 +394,9 @@ private fun ViewModeContent(
     name: String,
     bio: String,
     language: String,
-    onLanguageClick: () -> Unit
+    reminderTime: String,
+    onLanguageClick: () -> Unit,
+    onAlarmClick: () -> Unit
 ) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Text(
@@ -420,13 +437,44 @@ private fun ViewModeContent(
                 .padding(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(painterResource(R.drawable.language), null, tint = SurfaceVariant)
+            Icon(
+                painter = painterResource(R.drawable.language),
+                contentDescription = "Change Language",
+                tint = SurfaceVariant
+            )
             Spacer(modifier = Modifier.width(8.dp))
             Text(
                 text = "${stringResource(R.string.language)}: ${language.uppercase()}",
                 style = MaterialTheme.typography.bodyMedium,
                 modifier = Modifier.weight(1f)
             )
+        }
+        Spacer(modifier = Modifier.height(8.dp))
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp)
+                .clickable { onAlarmClick() } // Lanzar el picker
+                .padding(12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                painter =  painterResource(R.drawable.clock),
+                contentDescription = "Scheduled Reminder" ,
+                tint = SurfaceVariant
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = stringResource(R.string.reminder_time),
+                    style = MaterialTheme.typography.bodyMedium
+                )
+                Text(
+                    text = reminderTime,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = AccentSecondary
+                )
+            }
         }
     }
 }

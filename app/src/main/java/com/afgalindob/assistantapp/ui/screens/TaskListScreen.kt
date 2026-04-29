@@ -16,7 +16,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -59,7 +58,6 @@ import com.afgalindob.assistantapp.ui.components.cards.TaskEvent
 import com.afgalindob.assistantapp.ui.components.bottomsheet.FilterBottomSheet
 import com.afgalindob.assistantapp.ui.theme.AccentPrimary
 import com.afgalindob.assistantapp.ui.theme.AccentSecondary
-import com.afgalindob.assistantapp.ui.theme.BackgroundColor
 import com.afgalindob.assistantapp.ui.theme.OnAccentPrimary
 import com.afgalindob.assistantapp.ui.theme.OnAccentSecondary
 import com.afgalindob.assistantapp.ui.theme.OnSurfacePrimary

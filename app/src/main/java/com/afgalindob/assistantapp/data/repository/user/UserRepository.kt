@@ -8,4 +8,5 @@ interface UserRepository {
     val languageData: Flow<String>
     suspend fun saveUser(userPrefs: UserPreferences)
     suspend fun updateLanguage(languageCode: String)
+    suspend fun updateReminderTime(time: String)
 }

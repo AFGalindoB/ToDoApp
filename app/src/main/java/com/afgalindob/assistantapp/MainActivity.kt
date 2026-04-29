@@ -1,6 +1,8 @@
 package com.afgalindob.assistantapp
 
+import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
@@ -17,9 +19,14 @@ import androidx.compose.ui.Modifier
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.afgalindob.assistantapp.ui.components.LoadingOverlay
 import com.afgalindob.assistantapp.ui.theme.AssistantTheme
+import com.afgalindob.assistantapp.utils.AlarmScheduler
 import com.afgalindob.assistantapp.utils.LanguageUtils
 import com.afgalindob.assistantapp.viewmodel.MainViewModel
 import kotlinx.coroutines.delay
+import android.Manifest
+import android.content.pm.PackageManager
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -29,34 +36,34 @@ class MainActivity : AppCompatActivity() {
         val container = (applicationContext as AssistantAplication).container
         val viewModel = MainViewModel(container)
 
-        splashScreen.setKeepOnScreenCondition {
-            !viewModel.isAppReady.value
-        }
+        splashScreen.setKeepOnScreenCondition { !viewModel.isAppReady.value }
 
         enableEdgeToEdge()
 
         setContent {
             val isAppReady by viewModel.isAppReady.collectAsState()
-
             val langByRepo by container.userRepository.languageData.collectAsState(initial = null)
-
-            // 2. Estado local para el overlay (solo vive en esta instancia)
+            val preferences by container.userRepository.userData.collectAsState(initial = null)
             var showOverlay by remember { mutableStateOf(false) }
 
             LaunchedEffect(langByRepo) {
                 if (isAppReady && langByRepo != null) {
                     val currentAppLang = AppCompatDelegate.getApplicationLocales().get(0)?.language
-
                     if (langByRepo != currentAppLang) {
-                        // El idioma cambió en el DataStore pero no en la UI
                         showOverlay = true
-                        delay(500) // Tiempo para que el usuario vea el giro del icon
-
-                        // Aplicamos el cambio a nivel sistema
+                        delay(500)
                         LanguageUtils.applyAppLanguage(langByRepo!!)
                     }
                 }
             }
+
+            LaunchedEffect(preferences?.reminderTime) {
+                preferences?.reminderTime?.let { time ->
+                    Log.d("Main_Alarm", "Sincronizando alarma para las: $time")
+                    AlarmScheduler.schedule(applicationContext, time)
+                }
+            }
+
             AssistantTheme {
                 if (isAppReady) {
                     AssistantApp(container)
@@ -64,6 +71,14 @@ class MainActivity : AppCompatActivity() {
                     Box(Modifier.fillMaxSize())
                 }
                 LoadingOverlay(isVisible = showOverlay)
+            }
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) !=
+                PackageManager.PERMISSION_GRANTED
+            ) {
+                ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.POST_NOTIFICATIONS), 101)
             }
         }
     }

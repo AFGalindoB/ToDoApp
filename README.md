@@ -1,6 +1,8 @@
-# AssistantApp
+# Noir Assistant
 
-**AssistantApp** es una herramienta de organización personal diseñada para funcionar como un asistente útil, modular y eficiente. Su enfoque principal es la centralización de tareas y notas bajo una arquitectura sólida y almacenamiento local, permitiendo al usuario gestionar su día a día con rapidez y estructura.
+![Logo App](docs/images/logo.png)
+
+**Noir Assistant** es una herramienta de organización personal diseñada para funcionar como un asistente útil, modular y eficiente. Su enfoque principal es la centralización de tareas y notas bajo una arquitectura sólida y almacenamiento local, permitiendo al usuario gestionar su día a día con rapidez y estructura.
 
 Inspirada en la agilidad de herramientas de productividad modernas, busca ofrecer una experiencia fluida donde la gestión de la información sea inmediata y privada.
 
@@ -80,10 +82,19 @@ Esto evita sobrecargar el menú principal con cambios frecuentes donde se distin
   - Aplicación reactiva de Locales mediante AppCompatDelegate, permitiendo cambios de idioma en tiempo real sin reiniciar la aplicación.
 - **Persistencia con Jetpack DataStore:** Almacenamiento reactivo mediante flujos de datos (Flow). 
   - Arquitectura desacoplada: el sistema distingue entre actualizaciones de perfil (identidad) y actualizaciones de configuración (accesibilidad/idioma) para optimizar el rendimiento.
+- **Configuración de Recordatorios:** Implementación de un selector de hora interactivo para personalizar la alerta diaria.
+  - **Selector de Rueda Finito:** Diseño de un `FiniteWheelPicker` para horas y minutos que ofrece un desplazamiento suave, deteniéndose en los límites de tiempo.
+  - **Feedback Visual Dinámico:** Los elementos de la rueda ajustan su opacidad (alpha) en tiempo real según su proximidad al centro, proporcionando una experiencia visual fluida.
+  - **Sincronización de Preferencias:** La hora seleccionada se persiste en DataStore y se vincula con el sistema de notificaciones para garantizar la puntualidad de los avisos.
 
 ![Pantalla de cuenta](docs/images/account.jpeg)
 
----
+### Sistema de Notificaciones Resilientes
+- **Recordatorios Proactivos:** Sistema de alertas automáticas de manera diaria que informan al usuario sobre el estado de sus tareas pendientes y atrasadas.
+- **Arquitectura de Alta Precisión:** - **AlarmManager (`setAlarmClock`):** Implementación de alarmas de precisión extrema que garantizan la ejecución incluso en modos de ahorro de energía agresivos (Doze Mode).
+  - **WorkManager:** Gestión de tareas en segundo plano para procesar la lógica de negocio y preparar el contenido de la notificación de forma eficiente.
+- **Resiliencia ante Reinicios:** Uso de `RECEIVE_BOOT_COMPLETED` para re-agendar automáticamente los recordatorios al encender el dispositivo, asegurando que el asistente nunca pierda su ciclo de alerta.
+- **Interfaz Visual Adaptativa:** Notificaciones con estilo enriquecido que incluyen el logo de identidad de la app y soporte para mensajes expandibles, facilitando la lectura de listas de tareas desde la pantalla de bloqueo.
 
 ### Sistema de Arranque y Optimización
 - **Inicio Optimizado (Baseline Profiles):** La aplicación incorpora Baseline Profiles para mejorar el rendimiento en tiempo de arranque, reduciendo tiempos de carga y evitando compilación en caliente en rutas críticas.
@@ -134,10 +145,49 @@ Esto evita sobrecargar el menú principal con cambios frecuentes donde se distin
   Carga de imágenes asíncrona.
 
 - **AppCompat Library**
-  Utilizada como puente para la gestión avanzada de localización e internacionalización, permitiendo el cambio de idioma in-app **[Nuevo]**
+  Utilizada como puente para la gestión avanzada de localización e internacionalización, permitiendo el cambio de idioma in-app
 
 - **Baseline Profiles**  
   Herramienta de optimización de rendimiento en tiempo de ejecución.
+
+- **WorkManager**
+  Programación de tareas en segundo plano garantizadas y persistentes. **[Nuevo]**
+
+- **AlarmManager**
+  Programación de eventos exactos a nivel de sistema. **[Nuevo]**
+
+- **Broadcast Receivers**
+  Escucha de eventos del sistema (como el arranque del dispositivo) para mantener la continuidad del servicio. **[Nuevo]**
+
+---
+
+## Requisitos del Sistema y Especificaciones Técnicas
+- **Min SDK:** API 26 (Android 8.0 Oreo) — Garantiza compatibilidad con funciones modernas de notificaciones y gestión de alarmas.
+
+- **Target SDK:** API 35 (Android 15) — La aplicación está optimizada para las versiones más recientes del sistema.
+
+- **Versión Actual De La Aplicación:** 1.3.0 (Build 5).
+
+---
+
+## Cómo ejecutar el proyecto 🚀
+
+Para tener una copia local de **Noir Assistant** en funcionamiento, sigue estos pasos:
+
+1. **Clonar el repositorio desde Android Studio:**
+   - Abre Android Studio.
+   - En la pantalla de bienvenida o en el menú superior, selecciona **File > New > Project from Version Control...**
+   - En la opción **Repository URL**, pega el enlace de este repositorio: `https://github.com/AFGalindoB/Noir-Assistant.git`
+   - Haz clic en **Clone**.
+2. **Sincronización de Gradle:**
+   - Una vez finalizada la clonación, Android Studio detectará automáticamente los archivos de configuración.
+   - Espera a que la barra de progreso de **Gradle Sync** termine de descargar todas las dependencias necesarias.
+3. **Ejecución:**
+  - Conecta un dispositivo físico (con la depuración USB activada) o inicia un emulador.
+  - Haz clic en el botón **Run** (el icono de "Play" verde ▶️) en la barra de herramientas superior.
+  - El proceso de `build` compilará el proyecto e instalará la aplicación automáticamente.
+
+> **Nota:** Asegúrate de tener instalada la versión más reciente de Android Studio y el SDK de Android correspondiente para garantizar la compatibilidad con Jetpack Compose y las dependencias.
 
 ---
 
@@ -145,7 +195,7 @@ Esto evita sobrecargar el menú principal con cambios frecuentes donde se distin
 
 Este proyecto está bajo la **Licencia MIT**.
 
-Fiel a la filosofía de Software Libre, **AssistantApp** es una herramienta abierta, escalable y adaptable, diseñada para ser un asistente personal eficiente y centrado en el usuario.
+Fiel a la filosofía de Software Libre, **Noir Assistant** es una herramienta abierta, escalable y adaptable, diseñada para ser un asistente personal eficiente y centrado en el usuario.
 
 ---
 
@@ -156,3 +206,4 @@ Para más detalles técnicos sobre la implementación consulte:
 ### Flujo de Datos
 * [Flujo de Datos con Room (Persistencia de Tareas y Notas)](docs/Room_Data_Flow.md)
 * [Flujo de Preferencias con DataStore (Perfil de Usuario)](docs/DataStore_Data_Flow.md)
+* [Ciclo de Vida de Notificaciones y Alarmas (Resiliencia)](docs/Notifications_Logic.md)

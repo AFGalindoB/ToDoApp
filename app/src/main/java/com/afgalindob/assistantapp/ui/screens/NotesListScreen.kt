@@ -19,7 +19,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -29,7 +28,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
@@ -52,7 +50,6 @@ import com.afgalindob.assistantapp.ui.components.cards.NoteEvent
 import com.afgalindob.assistantapp.ui.dialogs.alert.NoteUpserDialog
 import com.afgalindob.assistantapp.ui.theme.AccentPrimary
 import com.afgalindob.assistantapp.ui.theme.AccentSecondary
-import com.afgalindob.assistantapp.ui.theme.BackgroundColor
 import com.afgalindob.assistantapp.ui.theme.OnAccentPrimary
 import com.afgalindob.assistantapp.ui.theme.OnAccentSecondary
 import com.afgalindob.assistantapp.viewmodel.room.NoteViewModel
@@ -78,7 +75,6 @@ fun NotesListScreen(
         var expandedNoteId by remember { mutableStateOf<Long?>(null) }
 
         val snackbarHostState = remember { SnackbarHostState() }
-        val scope = rememberCoroutineScope()
         var deletingNote by remember { mutableStateOf<NoteDomain?>(null) }
 
         var dialogMode by remember { mutableStateOf<String?>(null) }

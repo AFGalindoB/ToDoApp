@@ -20,6 +20,14 @@ interface TaskDao {
     """)
     fun getTasks(showCompleted: Boolean, today: Long): Flow<List<TaskEntity>>
 
+    @Query("""
+        SELECT * FROM tasks 
+        WHERE date <= :endOfDay 
+        AND completed = 0 
+        AND deleteAt = 0
+    """)
+    suspend fun getPendingTasksForToday(endOfDay: Long): List<TaskEntity>
+
     @Query("SELECT * FROM tasks WHERE deleteAt > 0 ORDER BY deleteAt ASC")
     fun getDeletedTasks(): Flow<List<TaskEntity>>
 

@@ -19,7 +19,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -50,7 +49,6 @@ import com.afgalindob.assistantapp.ui.components.cards.NoteCard
 import com.afgalindob.assistantapp.ui.components.cards.TaskCard
 import com.afgalindob.assistantapp.ui.dialogs.alert.DeleteEntityDialog
 import com.afgalindob.assistantapp.ui.theme.AccentSecondary
-import com.afgalindob.assistantapp.ui.theme.BackgroundColor
 import com.afgalindob.assistantapp.ui.theme.OnAccentSecondary
 import com.afgalindob.assistantapp.viewmodel.room.TrashViewModel
 

@@ -9,5 +9,6 @@ data class UserPreferences(
     val centerX: Float = 0.5f,
     val centerY: Float = 0.5f,
     val zoom: Float = 1f,
-    val language: String = LanguageUtils.getSystemLanguageCode()
+    val language: String = LanguageUtils.getSystemLanguageCode(),
+    val reminderTime: String = "08:00"
 )

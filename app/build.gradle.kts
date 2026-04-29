@@ -17,8 +17,8 @@ android {
         applicationId = "com.afgalindob.assistantapp"
         minSdk = 26
         targetSdk = 35
-        versionCode = 1
-        versionName = "1.0.0"
+        versionCode = 5
+        versionName = "1.3.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -101,6 +101,7 @@ dependencies {
     implementation(libs.androidx.compose.foundation.layout)
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.compose.remote.creation.core)
+    implementation(libs.androidx.work.runtime.ktx)
     "baselineProfile"(project(":baselineprofile"))
     ksp("androidx.room:room-compiler:2.6.1")
 
@@ -112,4 +113,6 @@ dependencies {
 
     implementation("androidx.datastore:datastore-preferences:1.1.1")
     implementation("io.coil-kt:coil-compose:2.6.0")
+
+    implementation("dev.chrisbanes.snapper:snapper:0.3.0")
 }

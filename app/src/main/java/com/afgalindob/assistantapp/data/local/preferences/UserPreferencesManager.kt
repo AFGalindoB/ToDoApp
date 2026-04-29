@@ -22,6 +22,7 @@ class UserPreferencesManager(private val context: Context) {
         private val OFFSET_Y_KEY = floatPreferencesKey("user_image_offset_y")
         private val ZOOM_KEY = floatPreferencesKey("user_image_zoom")
         private val LANGUAGE_KEY = stringPreferencesKey("user_language")
+        private val REMINDER_TIME_KEY = stringPreferencesKey("reminder_time")
     }
 
     val userPreferencesFlow: Flow<UserPreferences> = context.dataStore.data.map { prefs ->
@@ -32,7 +33,8 @@ class UserPreferencesManager(private val context: Context) {
             centerX = prefs[OFFSET_X_KEY] ?: 0.5f,
             centerY = prefs[OFFSET_Y_KEY] ?: 0.5f,
             zoom = prefs[ZOOM_KEY] ?: 1f,
-            language = prefs[LANGUAGE_KEY] ?: LanguageUtils.getSystemLanguageCode()
+            language = prefs[LANGUAGE_KEY] ?: LanguageUtils.getSystemLanguageCode(),
+            reminderTime = prefs[REMINDER_TIME_KEY] ?: "08:00"
         )
     }
 
@@ -61,6 +63,12 @@ class UserPreferencesManager(private val context: Context) {
     suspend fun updateLanguage(languageCode: String) {
         context.dataStore.edit { prefs ->
             prefs[LANGUAGE_KEY] = LanguageUtils.normalizeLanguageCode(languageCode)
+        }
+    }
+
+    suspend fun updateReminderTime(time: String) {
+        context.dataStore.edit { prefs ->
+            prefs[REMINDER_TIME_KEY] = time
         }
     }
 }

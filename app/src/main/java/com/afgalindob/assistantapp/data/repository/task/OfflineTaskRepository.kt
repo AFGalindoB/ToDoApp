@@ -15,6 +15,9 @@ class OfflineTaskRepository(
     override fun getDeletedTasks(): Flow<List<TaskEntity>> =
         taskDao.getDeletedTasks()
 
+    override suspend fun getPendingTasksForToday(endOfDay: Long): List<TaskEntity> =
+        taskDao.getPendingTasksForToday(endOfDay)
+
     override suspend fun insertTask(task: TaskEntity) =
         taskDao.insertTask(task)
 

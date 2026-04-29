@@ -9,6 +9,8 @@ interface TaskRepository {
 
     fun getDeletedTasks(): Flow<List<TaskEntity>>
 
+    suspend fun getPendingTasksForToday(endOfDay: Long): List<TaskEntity>
+
     suspend fun insertTask(task: TaskEntity): Long
 
     suspend fun deleteTaskById(id: Long)

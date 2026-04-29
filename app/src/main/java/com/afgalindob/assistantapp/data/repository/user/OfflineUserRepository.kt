@@ -18,4 +18,8 @@ class OfflineUserRepository(
     override suspend fun updateLanguage(languageCode: String) {
         preferencesManager.updateLanguage(languageCode)
     }
+
+    override suspend fun updateReminderTime(time: String) {
+        preferencesManager.updateReminderTime(time)
+    }
 }
